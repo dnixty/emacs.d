@@ -39,19 +39,6 @@
 (when (require 'pinentry nil t)
   (pinentry-start))
 
-;; Line numbers
-(defun dnixty/turn-on-column-number-mode ()
-  "Unconditionally turn on `column-number-mode' for the current buffer."
-  (set (make-variable-buffer-local 'column-number-mode) t))
-(defun dnixty/turn-off-line-number-mode ()
-  "Unconditionally turn off `line-number-mode' for the current buffer."
-  (set (make-variable-buffer-local 'line-number-mode) nil))
-(dolist (hook '(prog-mode-hook text-mode-hook))
-  (add-hook hook 'dnixty/turn-on-column-number-mode)
-  (add-hook hook 'dnixty/turn-off-line-number-mode)
-  (add-hook hook 'display-line-numbers-mode))
-(setq display-line-numbers-type 'visual)
-
 ;; Remember last cursor position
 (save-place-mode)
 (add-hook 'before-save-hook 'save-place-kill-emacs-hook)
