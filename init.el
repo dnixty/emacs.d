@@ -65,6 +65,10 @@
 (with-eval-after-load 'org
   (require 'init-org))
 
+;; Pdf
+(when (require 'pdf-tools nil t)
+  (require 'init-pdf))
+
 ;; Projectile
 (when (require 'projectile nil t)
   (require 'init-projectile))
