@@ -96,4 +96,12 @@
 ;; Turn on column number mode
 (setq column-number-mode t)
 
+;; Ignore selected directories on grep
+(eval-after-load 'grep
+  '(progn
+     (add-to-list 'grep-find-ignored-directories "node_modules")))
+
+;; Increase large file warning threshold
+(setq large-file-warning-threshold 100000000)
+
 (provide 'main)
