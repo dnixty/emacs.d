@@ -9,6 +9,7 @@
 ;; Destroy eshell buffers after their processes die
 (setq eshell-destroy-buffer-when-process-dies t)
 
+;; New instance of eshell
 (defun eshell-new ()
   "Open a new instance of eshell."
   (interactive)

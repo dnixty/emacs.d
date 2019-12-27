@@ -2,57 +2,15 @@
 
 (helm-mode 1)
 
-(setq helm-follow-mode-persistent t
-      helm-reuse-last-window-split-state t
+(setq helm-reuse-last-window-split-state nil
       helm-display-header-line nil
-      helm-show-completion-display-function nil
-      helm-completion-mode-string ""
-      helm-dwim-target 'completion
       helm-echo-input-in-header-line t
-      helm-use-frame-when-more-than-two-windows nil
       helm-grep-save-buffer-name-no-confirm t
-
-      helm-M-x-fuzzy-match t
-      helm-apropos-fuzzy-match t
-      helm-buffers-fuzzy-matching t
-
+      helm-mode-fuzzy-match t
       helm-buffers-end-truncated-string "…"
       helm-buffer-max-length 22
-
-      helm-window-show-buffers-function 'helm-window-mosaic-fn
+      helm-split-window-default-side 'right
       helm-window-prefer-horizontal-split t)
-
-(defun dnixty/helm-split-window-combined-fn (window)
-  "Helm window splitting that combined most standard features.
-
-- With C-u, split inside. With C-u C-u, use same window.
-- Else use biggest other window when available.
-- Else split horizontally if width>height, vertically otherwise."
-  (cond
-   ((or (minibufferp helm-current-buffer)
-        (and
-         (not (one-window-p t))
-         (not (equal current-prefix-arg '(4)))
-         (not (equal current-prefix-arg '(16)))))
-    ;; Find biggest window.
-    (let (biggest (maxarea 0))
-      (dolist (w (window-list))
-        (unless (eq w (selected-window))
-          (let ((area (* (window-pixel-width w) (window-pixel-height w))))
-            (when (> area maxarea)
-              (setq maxarea area
-                    biggest w)))))
-      biggest))
-   ((equal current-prefix-arg '(16))
-    ;; Same window.
-    (selected-window))
-   (t
-    ;; If split inside or if unique window.
-    (split-window (selected-window) nil
-                  (if (> (window-pixel-width) (window-pixel-height))
-                      'right
-                    'below)))))
-(setq helm-split-window-preferred-function 'dnixty/helm-split-window-combined-fn)
 
 (global-set-key [remap execute-extended-command] 'helm-M-x)
 (global-set-key [remap find-file] 'helm-find-files)

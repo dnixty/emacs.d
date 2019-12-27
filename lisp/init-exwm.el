@@ -23,6 +23,9 @@
                         (exwm-workspace-switch-create ,i))))
                   (number-sequence 0 9))))
 
+(when (fboundp 'helm-pass)
+  (exwm-input-set-key (kbd "s-p") #'helm-pass))
+
 (with-eval-after-load 'helm
   (exwm-input-set-key (kbd "s-b") #'helm-mini)
   (exwm-input-set-key (kbd "s-f") #'helm-find-files))

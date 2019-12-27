@@ -29,11 +29,6 @@
 ;; Enable all disabled commands.
 (setq disabled-command-function nil)
 
-;; Configure pinentry
-(setq epa-pinentry-mode 'loopback)
-(when (require 'pinentry nil t)
-  (pinentry-start))
-
 ;; Remember last cursor position
 (save-place-mode)
 (add-hook 'before-save-hook 'save-place-kill-emacs-hook)
@@ -103,5 +98,15 @@
 
 ;; Increase large file warning threshold
 (setq large-file-warning-threshold 100000000)
+
+;; Encryption
+(setq-default epa-pinentry-mode 'loopback)
+(when (require 'pinentry nil t)
+  (pinentry-start))
+
+;; Enforce horizontal splitting
+;; TODO: change `split-width-threshold' to 140 after screen upgrade
+(setq split-height-threshold nil
+      split-width-threshold 130)
 
 (provide 'main)
