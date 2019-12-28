@@ -1,18 +1,34 @@
 ;;; Exwm
 
-(exwm-input-set-key (kbd "s-R") 'exwm-reset)
-(exwm-input-set-key (kbd "s-w") 'exwm-workspace-switch)
-(exwm-input-set-key (kbd "s-&") (lambda (command)
-                                  (interactive (list (read-shell-command "$ ")))
-                                  (start-process-shell-command command nil command)))
-(exwm-input-set-key (kbd "s-<return>") 'eshell)
+(global-set-key (kbd "C-x C-c") 'save-buffers-kill-emacs)
+
+;; Rename buffer to window title
+(defun dnixty/exwm-rename-buffer-to-title () (exwm-workspace-rename-buffer exwm-title))
+(add-hook 'exwm-update-title-hook 'dnixty/exwm-rename-buffer-to-title)
+
+(add-hook 'exwm-floating-setup-hook 'exwm-layout-hide-mode-line)
+(add-hook 'exwm-floating-exit-hook 'exwm-layout-show-mode-line)
+
+(exwm-input-set-key (kbd "s-R") #'exwm-reset)
+(exwm-input-set-key (kbd "s-x") #'exwm-input-toggle-keyboard)
+(exwm-input-set-key (kbd "s-h") #'windmove-left)
+(exwm-input-set-key (kbd "s-j") #'windmove-down)
+(exwm-input-set-key (kbd "s-k") #'windmove-up)
+(exwm-input-set-key (kbd "s-l") #'windmove-right)
+(if (not (fboundp 'helm-eshell-switch))
+    (exwm-input-set-key (kbd "s-<return>") #'eshell)
+  (exwm-input-set-key (kbd "s-<return>") #'helm-eshell-switch)
+  (exwm-input-set-key (kbd "S-s-<return>") #'helm-eshell-switch-other-window))
 (exwm-input-set-key (kbd "s-z") (lambda ()
                                   (interactive)
                                   (start-process "" nil "slock")))
 (exwm-input-set-key (kbd "s-SPC") #'exwm-floating-toggle-floating)
+(exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
 (exwm-input-set-key (kbd "s-<tab>") (lambda ()
                                       (interactive)
                                       (switch-to-buffer (other-buffer (current-buffer) 1))))
+(exwm-input-set-key (kbd "s-n") #'elfeed)
+
 (when (fboundp 'magit-status)
   (exwm-input-set-key (kbd "s-v") #'magit-status))
 (setq exwm-input-global-keys
@@ -27,8 +43,12 @@
   (exwm-input-set-key (kbd "s-p") #'helm-pass))
 
 (with-eval-after-load 'helm
+  (exwm-input-set-key (kbd "s-c") #'helm-resume)
   (exwm-input-set-key (kbd "s-b") #'helm-mini)
-  (exwm-input-set-key (kbd "s-f") #'helm-find-files))
+  (exwm-input-set-key (kbd "s-f") #'helm-find-files)
+  (exwm-input-set-key (kbd "s-F") #'helm-locate)
+  (exwm-input-set-key (kbd "s-r") #'helm-run-external-command))
+
 
 (defun dnixty/exwm-change-screen-hook ()
   (let ((xrandr-output-regexp "\n\\([^ ]+\\) connected ")
