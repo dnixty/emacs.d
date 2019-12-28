@@ -76,3 +76,6 @@
 ;; Projectile
 (when (require 'projectile nil t)
   (require 'init-projectile))
+
+;; Scheme
+(with-eval-after-load 'scheme (require 'init-scheme))
