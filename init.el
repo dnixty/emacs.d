@@ -31,6 +31,10 @@
 (with-eval-after-load 'elfeed
   (require 'init-elfeed))
 
+;; Emacs Lisp
+(when (require 'rainbow-delimiters nil t)
+  (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode))
+
 ;; Eshell
 (with-eval-after-load 'eshell
   (require 'init-eshell))
