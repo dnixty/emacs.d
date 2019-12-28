@@ -7,9 +7,16 @@
       helm-echo-input-in-header-line t
       helm-grep-save-buffer-name-no-confirm t
       helm-mode-fuzzy-match t
+      helm-M-x-fuzzy-match t
+      helm-apropos-fuzzy-match t
+      helm-buffers-fuzzy-matching t
+      helm-eshell-fuzzy-match t
+      helm-locate-library-fuzzy-match t
+      helm-recentf-fuzzy-match t
       helm-buffers-end-truncated-string "…"
       helm-buffer-max-length 22
       helm-split-window-default-side 'right
+      helm-show-completion-display-function nil
       helm-window-prefer-horizontal-split t)
 
 (global-set-key [remap execute-extended-command] 'helm-M-x)
