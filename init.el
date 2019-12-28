@@ -27,6 +27,10 @@
 
 ;; -- Packages -------------------------------------------------------
 
+;; Elfeed
+(with-eval-after-load 'elfeed
+  (require 'init-elfeed))
+
 ;; Eshell
 (with-eval-after-load 'eshell
   (require 'init-eshell))
