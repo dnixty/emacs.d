@@ -111,4 +111,8 @@
 
 ;; Save bookmarks on any change
 (setq bookmark-save-flag 1)
+
+;; Move point to top/bottom before signaling an error
+(setq scroll-error-top-bottom t)
+
 (provide 'main)
