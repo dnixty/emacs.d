@@ -109,4 +109,6 @@
 (setq split-height-threshold nil
       split-width-threshold 130)
 
+;; Save bookmarks on any change
+(setq bookmark-save-flag 1)
 (provide 'main)
