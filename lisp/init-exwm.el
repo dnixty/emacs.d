@@ -32,13 +32,13 @@
 
 (when (fboundp 'magit-status)
   (exwm-input-set-key (kbd "s-v") #'magit-status))
-(setq exwm-input-global-keys
-      `(,@(mapcar (lambda (i)
-                    `(,(kbd (format "s-%d" i)) .
-                      (lambda ()
-                        (interactive)
-                        (exwm-workspace-switch-create ,i))))
-                  (number-sequence 0 9))))
+
+;; bind s-<number> to switch to the corresponding workspace
+(dotimes (i 10)
+  (exwm-input-set-key (kbd (format "s-%d" i))
+                      `(lambda ()
+                         (interactive)
+                         (exwm-workspace-switch-create ,i))))
 
 (when (fboundp 'helm-pass)
   (exwm-input-set-key (kbd "s-p") #'helm-pass))
@@ -50,6 +50,41 @@
   (exwm-input-set-key (kbd "s-F") #'helm-locate)
   (exwm-input-set-key (kbd "s-r") #'helm-run-external-command))
 
+;; Pulseaudio
+(when (require 'pulseaudio-control nil t)
+  (setq pulseaudio-control-use-default-sink t
+        pulseaudio-control-volume-step "2%")
+  (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'pulseaudio-control-decrease-volume)
+  (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'pulseaudio-control-increase-volume)
+  (exwm-input-set-key (kbd "<XF86AudioMute>") #'pulseaudio-control-toggle-current-sink-mute))
+
+;; Simulation keys
+(exwm-input-set-simulation-keys
+ '(
+   ([?\C-b] . left)
+   ([?\M-b] . C-left)
+   ([?\C-f] . right)
+   ([?\M-f] . C-right)
+   ([?\C-p] . up)
+   ([?\C-n] . down)
+   ([?\C-a] . home)
+   ([?\C-e] . end)
+   ([?\M-v] . prior)
+   ([?\C-v] . next)
+   ([?\C-d] . delete)
+   ([?\C-k] . (S-end delete))
+   ([?\M-k] . ?\C-w)
+   ([?\C-w] . ?\C-x)
+   ([?\M-w] . ?\C-c)
+   ([?\C-y] . ?\C-v)
+   ([?\C-s] . ?\C-f)))
+
+;; Make sure that XF86 keys work in exwm buffers as well
+(dolist (k '(XF86AudioLowerVolume
+             XF86AudioRaiseVolume
+             XF86AudioMute
+             print))
+  (cl-pushnew k exwm-input-prefix-keys))
 
 (defun dnixty/exwm-change-screen-hook ()
   (let ((xrandr-output-regexp "\n\\([^ ]+\\) connected ")
