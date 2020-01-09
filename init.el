@@ -66,7 +66,7 @@
   (require 'init-javascript))
 
 ;; Neotree
-(with-eval-after-load 'neotree
+(when (require 'neotree nil t)
   (require 'init-neotree))
 
 ;; Org
