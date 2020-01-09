@@ -73,6 +73,8 @@
    ([?\C-v] . next)
    ([?\C-d] . delete)
    ([?\C-k] . (S-end delete))
+   ([?\C-g] . escape)
+   ([?\M-h] . ?\C-a)
    ([?\M-k] . ?\C-w)
    ([?\C-w] . ?\C-x)
    ([?\M-w] . ?\C-c)
