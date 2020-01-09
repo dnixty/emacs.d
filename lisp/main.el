@@ -115,4 +115,7 @@
 ;; Move point to top/bottom before signaling an error
 (setq scroll-error-top-bottom t)
 
+;; Show keystrokes after 0.5s
+(setq echo-keystrokes 0.5)
+
 (provide 'main)
