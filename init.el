@@ -65,6 +65,10 @@
 (when (require 'tide nil t)
   (require 'init-javascript))
 
+;; Lisp
+(with-eval-after-load 'lisp-mode
+  (require 'init-lisp))
+
 ;; Neotree
 (when (require 'neotree nil t)
   (require 'init-neotree))

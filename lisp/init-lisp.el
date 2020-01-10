@@ -1,0 +1,3 @@
+;;; Lisp
+
+(provide 'init-lisp)
