@@ -16,6 +16,8 @@
 (exwm-input-set-key (kbd "s-j") #'windmove-down)
 (exwm-input-set-key (kbd "s-k") #'windmove-up)
 (exwm-input-set-key (kbd "s-l") #'windmove-right)
+(exwm-input-set-key (kbd "s-D") #'kill-this-buffer)
+
 (if (not (fboundp 'helm-eshell-switch))
     (exwm-input-set-key (kbd "s-<return>") #'eshell)
   (exwm-input-set-key (kbd "s-<return>") #'helm-eshell-switch)
@@ -23,22 +25,19 @@
 (exwm-input-set-key (kbd "s-z") (lambda ()
                                   (interactive)
                                   (start-process "" nil "slock")))
+
 (exwm-input-set-key (kbd "s-SPC") #'exwm-floating-toggle-floating)
 (exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
+(exwm-input-set-key (kbd "s-O") #'exwm-layout-toggle-fullscreen)
+
 (exwm-input-set-key (kbd "s-<tab>") (lambda ()
                                       (interactive)
                                       (switch-to-buffer (other-buffer (current-buffer) 1))))
+
 (exwm-input-set-key (kbd "s-n") #'elfeed)
 
 (when (fboundp 'magit-status)
   (exwm-input-set-key (kbd "s-v") #'magit-status))
-
-;; bind s-<number> to switch to the corresponding workspace
-(dotimes (i 10)
-  (exwm-input-set-key (kbd (format "s-%d" i))
-                      `(lambda ()
-                         (interactive)
-                         (exwm-workspace-switch-create ,i))))
 
 (when (fboundp 'helm-pass)
   (exwm-input-set-key (kbd "s-p") #'helm-pass))
@@ -74,7 +73,8 @@
    ([?\C-d] . delete)
    ([?\C-k] . (S-end delete))
    ([?\C-g] . escape)
-   ([?\M-h] . ?\C-a)
+   ([?\M-n] . ?\C-n)
+   ([?\M-a] . ?\C-a)
    ([?\M-k] . ?\C-w)
    ([?\C-w] . ?\C-x)
    ([?\M-w] . ?\C-c)
