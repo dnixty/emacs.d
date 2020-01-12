@@ -118,4 +118,7 @@
 ;; Show keystrokes after 0.5s
 (setq echo-keystrokes 0.5)
 
+;; Require final newline
+(setq require-final-newline t)
+
 (provide 'main)
