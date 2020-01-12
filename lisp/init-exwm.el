@@ -129,4 +129,7 @@
                                     helm-source-bookmark-set
                                     helm-source-buffer-not-found)))
 
+;; Force exwm to manage specific windows.
+(add-to-list 'exwm-manage-configurations '((string= exwm-title "Wasabi Wallet") managed t))
+
 (provide 'init-exwm)
