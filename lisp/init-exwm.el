@@ -117,4 +117,16 @@
 (add-hook 'exwm-randr-screen-change-hook 'dnixty/exwm-change-screen-hook)
 (exwm-randr-enable)
 
+(when (require 'helm-exwm nil t)
+  (require 'helm-bookmark)
+  (add-to-list 'helm-source-names-using-follow "EXWM buffers")
+  (setq helm-exwm-emacs-buffers-source (helm-exwm-build-emacs-buffers-source))
+  (setq helm-exwm-source (helm-exwm-build-source))
+  (setq helm-mini-default-sources `(helm-exwm-emacs-buffers-source
+                                    helm-exwm-source
+                                    helm-source-recentf
+                                    helm-source-bookmarks
+                                    helm-source-bookmark-set
+                                    helm-source-buffer-not-found)))
+
 (provide 'init-exwm)

@@ -35,12 +35,4 @@
   (define-key eshell-mode-map (kbd "M-s f") 'helm-eshell-prompts-all))
 (add-hook 'eshell-mode-hook 'dnixty/helm/eshell-set-keys)
 
-;; Make `helm-mini' almighty.
-(require 'helm-bookmark)
-(setq helm-mini-default-sources `(helm-source-buffers-list
-                                  helm-source-recentf
-                                  helm-source-bookmarks
-                                  helm-source-bookmark-set
-                                  helm-source-buffer-not-found))
-
 (provide 'init-helm)
