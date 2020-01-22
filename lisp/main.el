@@ -121,4 +121,7 @@
 ;; Require final newline
 (setq require-final-newline t)
 
+;; Autoselect window on mouse scroll
+(setq mouse-autoselect-window t)
+
 (provide 'main)
