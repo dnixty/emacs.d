@@ -66,6 +66,7 @@
   (require 'init-javascript))
 
 ;; Lisp
+(setq inferior-lisp-program "clisp")
 (with-eval-after-load 'lisp-mode
   (require 'init-lisp))
 
