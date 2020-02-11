@@ -6,12 +6,17 @@
       helm-display-header-line nil
       helm-echo-input-in-header-line t
       helm-grep-save-buffer-name-no-confirm t
-      helm-mode-fuzzy-match t
-      helm-M-x-fuzzy-match t
+      helm-completion-style "helm-fuzzy"
       helm-apropos-fuzzy-match t
       helm-buffers-fuzzy-matching t
       helm-eshell-fuzzy-match t
+      helm-etags-fuzzy-match t
+      helm-M-x-fuzzy-match t
+      helm-ff-fuzzy-matching t
+      helm-file-cache-fuzzy-match t
+      helm-locate-fuzzy-match t
       helm-locate-library-fuzzy-match t
+      helm-session-fuzzy-match t
       helm-recentf-fuzzy-match t
       helm-buffers-end-truncated-string "…"
       helm-buffer-max-length 22
