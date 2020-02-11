@@ -64,7 +64,12 @@
 
 ;; Calendar
 (setq calendar-week-start-day 1
-      calendar-date-style 'iso)
+      calendar-date-style 'iso
+      calendar-latitude   51.508530
+      calendar-longitude -0.076132
+      calendar-christina-all-holidays-flag t
+      holiday-oriental-holidays nil)
+(add-hook 'calendar-today-visible-hook 'calendar-mark-today)
 
 ;; Zap up to char
 (autoload 'zap-up-to-char "misc"
