@@ -129,4 +129,7 @@
 ;; Autoselect window on mouse scroll
 (setq mouse-autoselect-window t)
 
+;; Prettify symbols
+(setq global-prettify-symbols-mode t)
+
 (provide 'main)
