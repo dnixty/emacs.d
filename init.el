@@ -65,6 +65,13 @@
 (when (require 'tide nil t)
   (require 'init-javascript))
 
+;; Ledger
+(add-to-list 'auto-mode-alist '("\\.ldg$" . ledger-mode))
+(add-hook 'ledger-mode 'flycheck-mode)
+(with-eval-after-load 'ledger-mode
+  (flycheck-mode +1)
+  (eval-after-load 'flycheck '(require 'flycheck-ledger)))
+
 ;; Lisp
 (setq inferior-lisp-program "clisp")
 (with-eval-after-load 'lisp-mode
