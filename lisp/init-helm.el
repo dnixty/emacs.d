@@ -40,4 +40,8 @@
   (define-key eshell-mode-map (kbd "M-s f") 'helm-eshell-prompts-all))
 (add-hook 'eshell-mode-hook 'dnixty/helm/eshell-set-keys)
 
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+(define-key helm-map (kbd "C-z") 'helm-select-action)
+
 (provide 'init-helm)
