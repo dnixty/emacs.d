@@ -18,6 +18,8 @@
       helm-locate-library-fuzzy-match t
       helm-session-fuzzy-match t
       helm-recentf-fuzzy-match t
+      helm-mode-fuzzy-match t
+      helm-completion-in-region-fuzzy-match t
       helm-buffers-end-truncated-string "…"
       helm-buffer-max-length 22
       helm-split-window-default-side 'right
