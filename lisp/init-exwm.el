@@ -47,7 +47,8 @@
   (exwm-input-set-key (kbd "s-b") #'helm-mini)
   (exwm-input-set-key (kbd "s-f") #'helm-find-files)
   (exwm-input-set-key (kbd "s-F") #'helm-locate)
-  (exwm-input-set-key (kbd "s-r") #'helm-run-external-command))
+  (exwm-input-set-key (kbd "s-r") #'helm-run-external-command)
+  (exwm-input-set-key (kbd "s-B") #'helm-filtered-bookmarks))
 
 ;; Pulseaudio
 (when (require 'pulseaudio-control nil t)
