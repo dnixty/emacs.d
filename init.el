@@ -27,6 +27,9 @@
 
 ;; -- Packages -------------------------------------------------------
 
+;; Dired
+(with-eval-after-load 'dired (require 'init-dired))
+
 ;; Elfeed
 (with-eval-after-load 'elfeed
   (require 'init-elfeed))
