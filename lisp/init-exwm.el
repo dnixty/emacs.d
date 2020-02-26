@@ -37,7 +37,7 @@
 (exwm-input-set-key (kbd "s-n") #'elfeed)
 
 (when (fboundp 'magit-status)
-  (exwm-input-set-key (kbd "s-v") #'magit-status))
+  (exwm-input-set-key (kbd "s-g") #'magit-status))
 
 (when (fboundp 'helm-pass)
   (exwm-input-set-key (kbd "s-p") #'helm-pass))
