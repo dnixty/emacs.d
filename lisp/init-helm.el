@@ -34,6 +34,10 @@
       helm-split-window-default-side 'right
       helm-window-prefer-horizontal-split t)
 
+;; change default prefix key
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
 (global-set-key [remap execute-extended-command] 'helm-M-x)
 (global-set-key [remap find-file] 'helm-find-files)
 (global-set-key [remap occur] 'helm-occur)
