@@ -57,6 +57,10 @@
 
 (helm-top-poll-mode)
 
+;; Projectile
+(when (require 'projectile nil t)
+  (setq projectile-switch-project-action 'helm-projectile))
+
 ;; Eshell
 (defun dnixty/helm/eshell-set-keys ()
   (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
