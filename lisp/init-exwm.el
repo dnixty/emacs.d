@@ -22,9 +22,14 @@
     (exwm-input-set-key (kbd "s-<return>") #'eshell)
   (exwm-input-set-key (kbd "s-<return>") #'helm-eshell-switch)
   (exwm-input-set-key (kbd "S-s-<return>") #'helm-eshell-switch-other-window))
-(exwm-input-set-key (kbd "s-z") (lambda ()
-                                  (interactive)
-                                  (start-process "" nil "slock")))
+
+
+(defun dnixty/suspend-to-sleep ()
+  (interactive)
+  (require 'recentf)
+  (recentf-save-list)
+  (call-process "loginctl" nil nil nil "lock-session"))
+(exwm-input-set-key (kbd "s-Z") #'dnixty/suspend-to-sleep)
 
 (exwm-input-set-key (kbd "s-SPC") #'exwm-floating-toggle-floating)
 (exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
