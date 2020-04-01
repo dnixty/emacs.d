@@ -73,6 +73,20 @@
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
 (define-key helm-map (kbd "C-z") 'helm-select-action)
 
+;; Skip dots in find files
+(defun dnixty/helm-skip-dots (old-func &rest args)
+  "Skip . and .. initially in helm-find-files.  First call OLD-FUNC with ARGS."
+  (apply old-func args)
+  (let ((sel (helm-get-selection)))
+    (if (and (stringp sel) (string-match "/\\.$" sel))
+        (helm-next-line 2)))
+  (let ((sel (helm-get-selection))) ; if we reached .. move back
+    (if (and (stringp sel) (string-match "/\\.\\.$" sel))
+        (helm-previous-line 1))))
+(advice-add #'helm-preselect :around #'dnixty/helm-skip-dots)
+(advice-add #'helm-ff-move-to-first-real-candidate :around #'dnixty/helm-skip-dots)
+
+;; Remove dotted programs
 (defun dnixty/helm-external-command-cleanup-dotted (old-function &optional args)
   "Remove dotted programs from `helm-run-external-command' list."
   (funcall old-function args)
