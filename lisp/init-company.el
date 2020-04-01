@@ -1,7 +1,5 @@
 ;;; Company
 
-(setq company-tooltip-align-annotations t
-      company-show-numbers t
-      company-tooltip-flip-when-above t)
+(setq company-idle-delay nil)
 
 (provide 'init-company)
