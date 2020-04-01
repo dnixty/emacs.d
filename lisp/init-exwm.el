@@ -23,6 +23,10 @@
   (exwm-input-set-key (kbd "s-<return>") #'helm-eshell-switch)
   (exwm-input-set-key (kbd "S-s-<return>") #'helm-eshell-switch-other-window))
 
+(defun dnixty/capture-screen ()
+  (interactive)
+  (start-process "" nil "flameshot" "gui"))
+(exwm-input-set-key (kbd "<print>") #'dnixty/capture-screen)
 
 (defun dnixty/suspend-to-sleep ()
   (interactive)
