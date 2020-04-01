@@ -23,6 +23,7 @@
 (setq user-emacs-directory "~/.cache/emacs/")
 
 (require 'main)
+(require 'functions)
 (require 'visual)
 
 ;; -- Packages -------------------------------------------------------
@@ -33,10 +34,6 @@
 ;; Elfeed
 (with-eval-after-load 'elfeed
   (require 'init-elfeed))
-
-;; Emacs Lisp
-(when (require 'rainbow-delimiters nil t)
-  (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode))
 
 ;; Eshell
 (with-eval-after-load 'eshell
@@ -76,9 +73,18 @@
   (eval-after-load 'flycheck '(require 'flycheck-ledger)))
 
 ;; Lisp
-(setq inferior-lisp-program "clisp")
-(with-eval-after-load 'lisp-mode
-  (require 'init-lisp))
+(setq inferior-lisp-program "sbcl")
+(when (require 'paredit nil t)
+  (autoload 'enable-paredit-mode "paredit" nil t)
+  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+  (add-hook 'ielm-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+  (add-hook 'scheme-mode-hook           #'enable-paredit-mode))
+(with-eval-after-load 'lisp-mode (require 'init-lisp))
+(when (require 'rainbow-delimiters nil t)
+  (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode))
 
 ;; Neotree
 (when (require 'neotree nil t)

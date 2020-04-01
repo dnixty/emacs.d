@@ -73,6 +73,19 @@
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
 (define-key helm-map (kbd "C-z") 'helm-select-action)
 
+;; Slime
+(with-eval-after-load 'slime
+  (when (require 'helm-slime nil t)
+    (with-eval-after-load 'slime-repl
+      (defun dnixty/helm/slime-set-keys ()
+        (define-key slime-repl-mode-map (kbd "M-p") 'helm-slime-repl-history)
+        (define-key slime-repl-mode-map (kbd "M-s") nil)
+        (define-key slime-repl-mode-map (kbd "M-s f") 'helm-comint-prompts-all)
+        (define-key slime-autodoc-mode-map (kbd "C-c C-d C-a") 'helm-slime-apropos)
+        (define-key slime-repl-mode-map (kbd "C-c C-x c") 'helm-slime-list-connections)
+        (define-key slime-repl-mode-map (kbd "M-<tab>") 'helm-slime-complete))
+      (add-hook 'slime-repl-mode-hook 'dnixty/helm/slime-set-keys))))
+
 ;; Skip dots in find files
 (defun dnixty/helm-skip-dots (old-func &rest args)
   "Skip . and .. initially in helm-find-files.  First call OLD-FUNC with ARGS."
