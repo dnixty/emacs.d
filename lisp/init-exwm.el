@@ -1,8 +1,8 @@
-;;; Exwm
+;;;; Exwm
 
 (global-set-key (kbd "C-x C-c") 'save-buffers-kill-emacs)
 
-;; Rename buffer to window title
+;;; Rename buffer to window title
 (defun dnixty/exwm-rename-buffer-to-title () (exwm-workspace-rename-buffer exwm-title))
 (add-hook 'exwm-update-title-hook 'dnixty/exwm-rename-buffer-to-title)
 
@@ -59,7 +59,7 @@
   (exwm-input-set-key (kbd "s-r") #'helm-run-external-command)
   (exwm-input-set-key (kbd "s-B") #'helm-filtered-bookmarks))
 
-;; Pulseaudio
+;;; Pulseaudio
 (when (require 'pulseaudio-control nil t)
   (setq pulseaudio-control-use-default-sink t
         pulseaudio-control-volume-step "2%")
@@ -67,7 +67,7 @@
   (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'pulseaudio-control-increase-volume)
   (exwm-input-set-key (kbd "<XF86AudioMute>") #'pulseaudio-control-toggle-current-sink-mute))
 
-;; Simulation keys
+;;; Simulation keys
 (exwm-input-set-simulation-keys
  '(
    ([?\C-b] . left)
@@ -91,7 +91,7 @@
    ([?\C-y] . ?\C-v)
    ([?\C-s] . ?\C-f)))
 
-;; Make sure that XF86 keys work in exwm buffers as well
+;;; Make sure that XF86 keys work in exwm buffers as well
 (dolist (k '(XF86AudioLowerVolume
              XF86AudioRaiseVolume
              XF86AudioMute
@@ -139,7 +139,7 @@
                                     helm-source-bookmark-set
                                     helm-source-buffer-not-found)))
 
-;; Force exwm to manage specific windows.
+;;; Force exwm to manage specific windows.
 (add-to-list 'exwm-manage-configurations '((string= exwm-title "Wasabi Wallet") managed t))
 
 (provide 'init-exwm)

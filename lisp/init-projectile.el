@@ -1,4 +1,4 @@
-;;; Projectile
+;;;; Projectile
 
 (projectile-mode)
 (setq projectile-completion-system 'helm

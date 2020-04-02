@@ -1,4 +1,4 @@
-;;; Helm
+;;;; Helm
 
 (helm-mode 1)
 
@@ -34,7 +34,7 @@
       helm-split-window-default-side 'right
       helm-window-prefer-horizontal-split t)
 
-;; change default prefix key
+;;; change default prefix key
 (global-set-key (kbd "C-c h") 'helm-command-prefix)
 (global-unset-key (kbd "C-x c"))
 
@@ -49,7 +49,7 @@
 (global-set-key (kbd "C-h SPC") 'helm-all-mark-rings)
 (global-set-key (kbd "C-c h x") 'helm-register)
 
-;; Descbinds
+;;; Descbinds
 (when (require 'helm-descbinds nil t)
   (helm-descbinds-mode))
 
@@ -57,11 +57,11 @@
 
 (helm-top-poll-mode)
 
-;; Projectile
+;;; Projectile
 (when (require 'projectile nil t)
   (setq projectile-switch-project-action 'helm-projectile))
 
-;; Eshell
+;;; Eshell
 (defun dnixty/helm/eshell-set-keys ()
   (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
   (define-key eshell-mode-map (kbd "M-p") 'helm-eshell-history)
@@ -73,7 +73,7 @@
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
 (define-key helm-map (kbd "C-z") 'helm-select-action)
 
-;; Slime
+;;; Slime
 (with-eval-after-load 'slime
   (when (require 'helm-slime nil t)
     (with-eval-after-load 'slime-repl
@@ -86,7 +86,7 @@
         (define-key slime-repl-mode-map (kbd "M-<tab>") 'helm-slime-complete))
       (add-hook 'slime-repl-mode-hook 'dnixty/helm/slime-set-keys))))
 
-;; Skip dots in find files
+;;; Skip dots in find files
 (defun dnixty/helm-skip-dots (old-func &rest args)
   "Skip . and .. initially in helm-find-files.  First call OLD-FUNC with ARGS."
   (apply old-func args)
@@ -99,7 +99,7 @@
 (advice-add #'helm-preselect :around #'dnixty/helm-skip-dots)
 (advice-add #'helm-ff-move-to-first-real-candidate :around #'dnixty/helm-skip-dots)
 
-;; Remove dotted programs
+;;; Remove dotted programs
 (defun dnixty/helm-external-command-cleanup-dotted (old-function &optional args)
   "Remove dotted programs from `helm-run-external-command' list."
   (funcall old-function args)

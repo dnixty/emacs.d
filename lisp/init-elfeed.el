@@ -1,4 +1,4 @@
-;;; Elfeed
+;;;; Elfeed
 
 (load "~/prv/elfeed.el.gpg" t)
 

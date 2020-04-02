@@ -1,4 +1,4 @@
-;;; Dired
+;;;; Dired
 (setq dired-guess-shell-alist-user
       (list
        '("\\.ogg$" "mpv")

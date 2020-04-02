@@ -1,21 +1,21 @@
-;;; Eshell
+;;;; Eshell
 
-;; Use Tramp to use Eshell as root
+;;; Use Tramp to use Eshell as root
 (require 'em-tramp)
 (setq password-cache t)
 (setq passwrod-cache-expiry 3600)
 
 
-;; Increase eshell history ring size
+;;; Increase eshell history ring size
 (setq eshell-history-size 1024)
 
-;; Make sure items in the eshell history are unique
+;;; Make sure items in the eshell history are unique
 (setq eshell-hist-ignoredups t)
 
-;; Destroy eshell buffers after their processes die
+;;; Destroy eshell buffers after their processes die
 (setq eshell-destroy-buffer-when-process-dies t)
 
-;; Auto-suggestion
+;;; Auto-suggestion
 (when (require 'esh-autosuggest nil t)
   (setq esh-autosuggest-delay 0.75)
   (add-hook 'eshell-mode-hook 'esh-autosuggest-mode)

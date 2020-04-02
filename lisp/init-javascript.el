@@ -1,20 +1,20 @@
-;;; Javascript
+;;;; Javascript
 
 (require 'flycheck)
 (require 'web-mode)
 
 (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
 
-;; Enable JSX syntax highlight
+;;; Enable JSX syntax highlight
 (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
 
-;; Indentation
+;;; Indentation
 (defun web-mode-init-hook ()
   "Hooks for Web mode.  Adjust indent."
   (setq web-mode-markup-indent-offset 2))
 (add-hook 'web-mode-hook  'web-mode-init-hook)
 
-;; Prettier
+;;; Prettier
 (defun web-mode-init-prettier-hook ()
   (add-node-modules-path)
   (prettier-js-mode))

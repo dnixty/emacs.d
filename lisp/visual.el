@@ -1,12 +1,12 @@
-;;; Visual
+;;;; Visual
 
-;; Set font
-(add-to-list 'default-frame-alist '(font . "Hack-14"))
+;;; Set font
+(add-to-list 'default-frame-alist '(font . "Hack-11"))
 
-;; Consider all themes safe to load
+;;; Consider all themes safe to load
 (setq custom-safe-themes t)
 
-;; Theme
+;;; Theme
 (when (require 'color-theme-sanityinc-tomorrow nil t)
   (setq-default custom-enabled-themes '(sanityinc-tomorrow-day))
   (defun dnixty/reapply-themes ()

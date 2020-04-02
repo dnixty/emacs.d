@@ -1,4 +1,4 @@
-;; -- Prerequisites --------------------------------------------------
+;;;; Prerequisites
 
 ;;; Speed up init.
 ;;; Temporarily reduce garbage collection during startup. Inspect `gcs-done'.
@@ -6,7 +6,7 @@
   (setq gc-cons-threshold (car (get 'gc-cons-threshold 'standard-value))))
 (setq gc-cons-threshold (* 64 1024 1024))
 (add-hook 'after-init-hook 'dnixty/reset-gc-cons-threshold)
-;;; Temporarily disable the file name handler.
+;;;; Temporarily disable the file name handler.
 (setq default-file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
 (defun dnixty/reset-file-name-handler-alist ()
@@ -16,63 +16,64 @@
   (cl-delete-duplicates file-name-handler-alist :test 'equal))
 (add-hook 'after-init-hook 'dnixty/reset-file-name-handler-alist)
 
-;; Store additional config in a 'lisp' subfolder
+;;; Store additional config in a 'lisp' subfolder
 (add-to-list 'load-path (expand-file-name "lisp/" user-emacs-directory))
 
-;; Move user-emacs-directory so that user files don't mix with cache files.
+;;; Move user-emacs-directory so that user files don't mix with cache files.
 (setq user-emacs-directory "~/.cache/emacs/")
 
 (require 'main)
 (require 'functions)
 (require 'visual)
 
-;; -- Packages -------------------------------------------------------
 
-;; Dired
+;;;; Packages
+
+;;; Dired
 (with-eval-after-load 'dired (require 'init-dired))
 
-;; Elfeed
+;;; Elfeed
 (with-eval-after-load 'elfeed
   (require 'init-elfeed))
 
-;; Eshell
+;;; Eshell
 (with-eval-after-load 'eshell
   (require 'init-eshell))
 
-;; Expand Region
+;;; Expand Region
 (when (require 'expand-region nil t)
   (global-set-key (kbd "C-=")'er/expand-region))
 
-;; Exwm
+;;; Exwm
 (with-eval-after-load 'exwm
   (require 'init-exwm))
 
-;; Company
+;;; Company
 (when (require 'company nil t)
   (require 'init-company))
 
-;; Haskell
+;;; Haskell
 (with-eval-after-load 'haskell-mode
   (require 'init-haskell))
 
-;; Helm
+;;; Helm
 (when (require 'helm-config nil t) (require 'init-helm))
 
-;; Helpful
+;;; Helpful
 (when (require 'helpful nil t) (require 'init-helpful))
 
-;; Javascript
+;;; Javascript
 (when (require 'tide nil t)
   (require 'init-javascript))
 
-;; Ledger
+;;; Ledger
 (add-to-list 'auto-mode-alist '("\\.ldg$" . ledger-mode))
 (add-hook 'ledger-mode 'flycheck-mode)
 (with-eval-after-load 'ledger-mode
   (flycheck-mode +1)
   (eval-after-load 'flycheck '(require 'flycheck-ledger)))
 
-;; Lisp
+;;; Lisp
 (setq inferior-lisp-program "sbcl")
 (when (require 'paredit nil t)
   (autoload 'enable-paredit-mode "paredit" nil t)
@@ -86,21 +87,21 @@
 (when (require 'rainbow-delimiters nil t)
   (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode))
 
-;; Neotree
+;;; Neotree
 (when (require 'neotree nil t)
   (require 'init-neotree))
 
-;; Org
+;;; Org
 (with-eval-after-load 'org
   (require 'init-org))
 
-;; Pdf
+;;; Pdf
 (when (require 'pdf-tools nil t)
   (require 'init-pdf))
 
-;; Projectile
+;;; Projectile
 (when (require 'projectile nil t)
   (require 'init-projectile))
 
-;; Scheme
+;;; Scheme
 (with-eval-after-load 'scheme (require 'init-scheme))

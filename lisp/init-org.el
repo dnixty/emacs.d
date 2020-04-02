@@ -1,4 +1,4 @@
-;;; Org
+;;;; Org
 
 (setq org-hide-leading-stars t)
 

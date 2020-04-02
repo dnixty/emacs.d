@@ -1,4 +1,4 @@
-;;; Company
+;;;; Company
 
 (setq company-idle-delay nil)
 
