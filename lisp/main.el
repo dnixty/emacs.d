@@ -132,4 +132,7 @@
 ;;; Prettify symbols
 (setq global-prettify-symbols-mode t)
 
+;;; Follow log buffer
+(add-to-list 'auto-mode-alist '("\\.log\\'" . auto-revert-tail-mode))
+
 (provide 'main)
