@@ -62,6 +62,12 @@
 ;;; Helpful
 (when (require 'helpful nil t) (require 'init-helpful))
 
+;;; Image
+(with-eval-after-load 'image
+  (setq image-animate-loop t)
+  (add-hook 'image-mode-hook 'image-toggle-animation)
+  (require 'image+ nil t))
+
 ;;; Javascript
 (when (require 'tide nil t)
   (require 'init-javascript))
