@@ -122,7 +122,8 @@
          "xrandr" nil nil nil
          "--output" (match-string 1) "--primary" "--auto"
          "--output" default-output "--off")
-        (setq exwm-randr-workspace-monitor-plist (list 0 (match-string 1)))))))
+        (setq exwm-randr-workspace-monitor-plist (list 0 (match-string 1))))
+      (dnixty/fonts-per-monitor))))
 (require 'exwm-randr)
 (add-hook 'exwm-randr-screen-change-hook 'dnixty/exwm-change-screen-hook)
 (exwm-randr-enable)
