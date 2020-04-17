@@ -400,12 +400,35 @@
          (before-save . (lambda () (delete-trailing-whitespace)))))
 
 ;; Parentheses
+(use-package paredit
+  :diminish
+  :hook ((emacs-lisp-mode . enable-paredit-mode)
+         (eval-expression-minibuffer-setup . enable-paredit-mode)
+         (ielm-mode . enable-paredit-mode)
+         (lisp-mode . enable-paredit-mode)
+         (lisp-interaction-mode . enable-paredit-mode)
+         (scheme-mode . enable-paredit-mode)))
 (use-package paren
   :config
-  (setq show-paren-when-point-int-periphery t)
-  (setq show-paren-when-point-inside-parent t)
+  (setq show-paren-when-point-in-periphery nil)
+  (setq show-paren-when-point-inside-paren t)
   (setq show-paren-delay 0)
   :hook (after-init . show-paren-mode))
+(use-package slime
+  :config
+  (defun dnixty/override-slime-repl-bindings-with-paredit ()
+    (define-key slime-repl-mode-map
+      (read-kbd-macro paredit-backward-delete-key) nil))
+  :hook ((slime-repl-mode . dnixty/override-slime-repl-bindings-with-paredit)
+         (slime-repl-mode . (lambda () (paredit-mode +1)))))
+(use-package rainbow-delimiters
+  :pin manual
+  :init
+  :hook
+  ((emacs-lisp-mode-hook
+    ielm-mode-hook
+    lisp-mode-hook)
+   . rainbow-delimiters-mode))
 
 ;; Display current time
 (use-package time
@@ -448,16 +471,6 @@
   :bind (("C-=" . er/expand-region)
          ("C-M-=" . er/mark-outside-pairs)
          ("C-+" . er/mark-symbol)))
-
-;; Rainbow Delimiters
-(use-package rainbow-delimiters
-  :pin manual
-  :init
-  :hook
-  ((emacs-lisp-mode-hook
-    ielm-mode-hook
-    lisp-mode-hook)
-   . rainbow-delimiters-mode))
 
 ;; Collection of unpackaged commands or tweaks
 (use-package emacs
