@@ -477,6 +477,12 @@
          ("C-M-=" . er/mark-outside-pairs)
          ("C-+" . er/mark-symbol)))
 
+;; Eldoc
+(use-package eldoc
+  :delight
+  :config
+  (global-eldoc-mode 1))
+
 ;; Collection of unpackaged commands or tweaks
 (use-package emacs
   :config
