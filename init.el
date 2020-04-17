@@ -166,6 +166,10 @@
   ;; Force exwm to manage specific windows
   (add-to-list 'exwm-manage-configurations
                '((string= exwm-title "Wasabi Wallet") managed t))
+  ;; Allow non-floating resizing with mouse
+  (setq window-divider-default-bottom-width 2)
+  (setq window-divider-default-right-width 2)
+  (window-divider-mode)
   :bind (("C-x C-c" . save-buffers-kill-emacs))
   :hook ((exwm-update-title . dnixty/exwm-rename-buffer)
          (exwm-update-class . dnixty/exwm-rename-buffer)
@@ -230,12 +234,23 @@
   (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'pulseaudio-control-increase-volume)
   (exwm-input-set-key (kbd "<XF86AudioMute>") #'pulseaudio-control-toggle-current-sink-mute))
 
-(use-package frame
-  :after exwm
+
+;; Display current time
+(use-package time
   :config
-  (setq window-divider-default-bottom-width 2)
-  (setq window-divider-default-right-width 2)
-  (window-divider-mode))
+  (setq display-time-format "%H:%M  %Y-%m-%d")
+  (setq display-time-default-load-average nil)
+  (display-time-mode))
+
+;; Battery status
+(use-package battery
+  :config
+  (setq battery-mode-line-format "  [%b%p%%]")
+  (setq battery-mode-line-limit 99)
+  (setq battery-update-interval 180)
+  (setq battery-load-low 20)
+  (setq battery-load-critical 10)
+  (display-battery-mode))
 
 
 ;;; --------------------------------------------------------------------
@@ -442,28 +457,6 @@
     ielm-mode-hook
     lisp-mode-hook)
    . rainbow-delimiters-mode))
-
-;; Display current time
-(use-package time
-  :config
-  (setq display-time-format "%H:%M  %Y-%m-%d")
-  (setq display-time-default-load-average nil)
-  (display-time-mode))
-
-;; Battery status
-(use-package battery
-  :config
-  (setq battery-mode-line-format "  [%b%p%%]")
-  (setq battery-mode-line-limit 99)
-  (setq battery-update-interval 180)
-  (setq battery-load-low 20)
-  (setq battery-load-critical 10)
-  (display-battery-mode))
-
-;; Kill whole line including \n.
-(use-package emacs
-  :config
-  (setq kill-whole-line t))
 
 ;; Newline characters for file ending
 (use-package emacs
