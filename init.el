@@ -238,6 +238,7 @@
 (use-package helm-config)
 
 (use-package helm
+  :delight
   :config
   (global-unset-key (kbd "C-x c"))
   (setq helm-reuse-last-window-split-state t)
@@ -294,6 +295,7 @@
 
 ;; Projectile
 (use-package projectile
+  :delight
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   (setq projectile-completion-system 'helm)
@@ -404,7 +406,7 @@
 
 ;; Parentheses
 (use-package paredit
-  :diminish
+  :delight
   :hook ((emacs-lisp-mode . enable-paredit-mode)
          (eval-expression-minibuffer-setup . enable-paredit-mode)
          (ielm-mode . enable-paredit-mode)
