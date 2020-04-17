@@ -96,8 +96,13 @@
 ;; Exwm
 (use-package exwm
   :config
-  (defun dnixty/exwm-rename-buffer-to-title ()
-    (exwm-workspace-rename-buffer exwm-title))
+  (defun dnixty/exwm-rename-buffer ()
+    (interactive)
+    (exwm-workspace-rename-buffer
+     (concat exwm-class-name ": "
+             (if (<= (length exwm-title) 22)
+                 exwm-title
+               (concat (substring exwm-title 0 21) "…")))))
   (defun dnixty/capture-screen ()
     (interactive)
     (start-process "" nil "flameshot" "gui"))
@@ -162,7 +167,9 @@
   (add-to-list 'exwm-manage-configurations
                '((string= exwm-title "Wasabi Wallet") managed t))
   :bind (("C-x C-c" . save-buffers-kill-emacs))
-  :hook ((exwm-update-title . dnixty/exwm-rename-buffer-to-title)
+  :hook ((exwm-update-title . dnixty/exwm-rename-buffer)
+         (exwm-update-class . dnixty/exwm-rename-buffer)
+         (exwm-update-title . dnixty/exwm-rename-buffer)
          (exwm-floating-setup . exwm-layout-hide-mode-line)
          (exwm-floating-exit . exwm-layout-show-mode-line)))
 
