@@ -123,6 +123,7 @@
   (exwm-input-set-key (kbd "s-k") #'kill-this-buffer)
   (exwm-input-set-key (kbd "s-o") #'other-window)
   (exwm-input-set-key (kbd "s-O") #'exwm-layout-toggle-fullscreen)
+  (exwm-input-set-key (kbd "s-p") #'projectile-command-map)
   (exwm-input-set-key (kbd "s-P") #'helm-pass)
   (exwm-input-set-key (kbd "s-r") #'helm-run-external-command)
   (exwm-input-set-key (kbd "s-R") #'exwm-reset)
