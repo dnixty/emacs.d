@@ -535,6 +535,13 @@
   :after eshell
   :config
   (delq 'eshell-banner eshell-modules-list))
+(use-package esh-autosuggest
+  :after eshell
+  :config
+  (setq esh-autosuggest-delay 0.5)
+  :bind (:map esh-autosuggest-active-map
+              ("<tab>" . company-complete-selection))
+  :hook (eshell-mode . esh-autosuggest-mode))
 
 ;; Helm Pass
 (use-package helm-pass)
