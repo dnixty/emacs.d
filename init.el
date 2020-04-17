@@ -249,7 +249,6 @@
   (setq helm-split-window-default-side 'right)
   (setq helm-window-prefer-horizontal-split t)
   (setq helm-completion-style "helm-flex")
-  ;; (global-set-key (kbd "C-c h x") 'helm-register)
   :bind (("C-c h" . helm-command-prefix)
          ([remap execute-extended-command] . helm-M-x)
          ([remap find-file] . helm-find-files)
@@ -258,7 +257,11 @@
          ([remap yank-pop] . helm-show-kill-ring)
          ([remap apropos-command] . helm-apropos)
          ([remap query-replace-regexp] . helm-regexp)
-         ("C-h SPC" . helm-all-mark-rings))
+         ("C-h SPC" . helm-all-mark-rings)
+         :map helm-map
+         ("<tab>" . helm-execute-persistent-action)
+         ("C-i" . helm-execute-persistent-action)
+         ("C-z" . helm-select-action))
   :hook (after-init . helm-mode))
 
 ;; Helm descbinds
