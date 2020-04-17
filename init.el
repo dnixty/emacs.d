@@ -28,9 +28,7 @@
 ;;; --------------------------------------------------------------------
 
 ;; Edit modeline "lighters"
-(use-package delight
-  :pin manual
-  :after use-package)
+(use-package diminish)
 
 ;; Don't let `customize' clutter the config
 (use-package cus-edit
@@ -261,7 +259,6 @@
 (use-package helm-config)
 
 (use-package helm
-  :delight
   :config
   (global-unset-key (kbd "C-x c"))
   (setq helm-reuse-last-window-split-state t)
@@ -286,7 +283,8 @@
          ("<tab>" . helm-execute-persistent-action)
          ("C-i" . helm-execute-persistent-action)
          ("C-z" . helm-select-action))
-  :hook (after-init . helm-mode))
+  :hook ((after-init . helm-mode)
+         (helm-mode . (lambda () (diminish 'helm-mode)))))
 
 ;; Helm descbinds
 (use-package helm-descbinds
@@ -318,7 +316,7 @@
 
 ;; Projectile
 (use-package projectile
-  :delight
+  :diminish
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   (setq projectile-completion-system 'helm)
@@ -331,6 +329,8 @@
   (setq projectile-switch-project-action 'helm-projectile)
   (helm-projectile-on))
 
+(use-package isearch
+  :diminish)
 
 ;;; --------------------------------------------------------------------
 ;;; 5. General interface
@@ -401,7 +401,6 @@
 ;; Auto revert mode
 (use-package autorevert
   :mode ("\\.log\\'" . auto-revert-tail-mode)
-  :delight
   :hook (after-init . global-auto-revert-mode))
 
 ;; Preserve contents of system clipboard
@@ -429,7 +428,7 @@
 
 ;; Parentheses
 (use-package paredit
-  :delight
+  :diminish
   :hook ((emacs-lisp-mode . enable-paredit-mode)
          (eval-expression-minibuffer-setup . enable-paredit-mode)
          (ielm-mode . enable-paredit-mode)
@@ -450,6 +449,7 @@
   :hook ((slime-repl-mode . dnixty/override-slime-repl-bindings-with-paredit)
          (slime-repl-mode . (lambda () (paredit-mode +1)))))
 (use-package rainbow-delimiters
+  :diminish
   :pin manual
   :init
   :hook
@@ -467,7 +467,8 @@
 (use-package mouse
   :config
   (setq mouse-autoselect-window t)
-  (setq make-pointer-invisible t))
+  (setq make-pointer-invisible t)
+  (tooltip-mode -1))
 
 ;; Expand Region
 (use-package expand-region
@@ -480,7 +481,7 @@
 
 ;; Eldoc
 (use-package eldoc
-  :delight
+  :diminish
   :config
   (global-eldoc-mode 1))
 
