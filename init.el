@@ -538,16 +538,6 @@
 ;; Magit
 (use-package magit)
 
-;; Helpful
-(use-package helpful
-  :pin manual
-  :bind (("C-h f" . helpful-callable)
-         ("C-h v" . helpful-variable)
-         ("C-h o" . helpful-at-point)
-         ("C-h F" . helpful-function)
-         ("C-h k" . helpful-key)
-         ("C-h C" . helpful-command)))
-
 ;; Slime
 (use-package slime
   :pin manual
