@@ -465,12 +465,11 @@
          (slime-repl-mode . (lambda () (paredit-mode +1)))))
 (use-package rainbow-delimiters
   :diminish
-  :pin manual
-  :init
   :hook
-  ((emacs-lisp-mode-hook
-    ielm-mode-hook
-    lisp-mode-hook)
+  ((emacs-lisp-mode
+    ielm-mode
+    lisp-mode
+    scheme-mode)
    . rainbow-delimiters-mode))
 
 ;; Newline characters for file ending
