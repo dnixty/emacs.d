@@ -129,6 +129,7 @@
                print))
   (cl-pushnew k exwm-input-prefix-keys))
   ;; Global keys
+  (exwm-input-set-key (kbd "s-8") #'helm-ucs)
   (exwm-input-set-key (kbd "s-b") #'helm-mini)
   (exwm-input-set-key (kbd "s-B") #'helm-filtered-bookmarks)
   (exwm-input-set-key (kbd "s-c") #'helm-resume)
@@ -142,6 +143,7 @@
   (exwm-input-set-key (kbd "s-P") #'helm-pass)
   (exwm-input-set-key (kbd "s-r") #'helm-run-external-command)
   (exwm-input-set-key (kbd "s-R") #'exwm-reset)
+  (exwm-input-set-key (kbd "s-x") #'helm-register)
   (exwm-input-set-key (kbd "s-Z") #'dnixty/suspend-to-sleep)
   (exwm-input-set-key (kbd "s-SPC") #'exwm-floating-toggle-floating)
   (exwm-input-set-key (kbd "s-<return>") #'eshell)
