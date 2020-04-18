@@ -282,6 +282,7 @@
   (setq helm-split-window-default-side 'right)
   (setq helm-window-prefer-horizontal-split t)
   (setq helm-completion-style "helm-flex")
+  (helm-top-poll-mode)
   :bind (("C-c h" . helm-command-prefix)
          ([remap execute-extended-command] . helm-M-x)
          ([remap find-file] . helm-find-files)
