@@ -318,7 +318,6 @@
 
 ;; Slime
 (use-package helm-slime
-  :requires slime
   :config
   (defun dnixty/helm/slime-set-keys ()
     (define-key slime-repl-mode-map (kbd "M-p") 'helm-slime-repl-history)
@@ -326,7 +325,7 @@
     (define-key slime-repl-mode-map (kbd "M-s f") 'helm-comint-prompts-all)
     (define-key slime-autodoc-mode-map (kbd "C-c C-d C-a") 'helm-slime-apropos)
     (define-key slime-repl-mode-map (kbd "C-c C-x c") 'helm-slime-list-connections)
-    (define-key slime-repl-mode-map (kbd "M-<tab>") 'helm-slime-complete))
+    (define-key slime-repl-mode-map (kbd "<tab>") 'helm-slime-complete))
   :hook (slime-repl-mode . dnixty/helm/slime-set-keys))
 
 ;; Projectile
@@ -580,7 +579,6 @@
           (clisp ("clisp"))))
   (slime-setup '(slime-fancy)))
 (use-package helm-slime
-  :pin manual
   :after slime
   :config
   (global-helm-slime-mode))
