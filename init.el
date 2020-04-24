@@ -27,6 +27,13 @@
 ;;; 2. Base settings
 ;;; --------------------------------------------------------------------
 
+;; Mouse behaviour
+(use-package mouse
+  :init
+  (setq mouse-autoselect-window t)
+  (setq make-pointer-invisible t)
+  (tooltip-mode -1))
+
 ;; Edit modeline "lighters"
 (use-package diminish)
 
@@ -467,13 +474,6 @@
 (use-package emacs
   :config
   (setq mode-require-final-newline 'visit-save))
-
-;; Mouse behaviour
-(use-package mouse
-  :config
-  (setq mouse-autoselect-window t)
-  (setq make-pointer-invisible t)
-  (tooltip-mode -1))
 
 ;; Expand Region
 (use-package expand-region
