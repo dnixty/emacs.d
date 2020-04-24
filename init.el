@@ -270,6 +270,7 @@
 (use-package helm
   :config
   (global-unset-key (kbd "C-x c"))
+  (setq helm-show-completion-display-function nil)
   (setq helm-reuse-last-window-split-state t)
   (setq helm-echo-input-in-header-line t)
   (setq helm-grep-save-buffer-name-no-confirm t)
