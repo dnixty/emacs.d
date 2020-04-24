@@ -93,18 +93,6 @@
   (setq auto-save-default nil)
   (setq auto-save-list-file-prefix nil))
 
-;; Desktop mode
-(use-package desktop
-  :config
-  (setq desktop-auto-save-timeout 300)
-  (setq desktop-dirname user-emacs-directory)
-  (setq desktop-base-file-name "desktop")
-  (setq desktop-load-locked-desktop t)
-  (setq desktop-missing-file-warning t)
-  (setq desktop-restore-frames nil)
-  (setq desktop-save 'ask-if-new)
-  (desktop-save-mode 1))
-
 
 ;;; --------------------------------------------------------------------
 ;;; 3. Window manager
