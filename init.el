@@ -462,14 +462,6 @@
       (read-kbd-macro paredit-backward-delete-key) nil))
   :hook ((slime-repl-mode . dnixty/override-slime-repl-bindings-with-paredit)
          (slime-repl-mode . (lambda () (paredit-mode +1)))))
-(use-package rainbow-delimiters
-  :diminish
-  :hook
-  ((emacs-lisp-mode
-    ielm-mode
-    lisp-mode
-    scheme-mode)
-   . rainbow-delimiters-mode))
 
 ;; Newline characters for file ending
 (use-package emacs
