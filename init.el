@@ -186,8 +186,8 @@
 
 (use-package exwm-randr
   :after exwm
-  :commands exwm-randr-enable
   :demand t
+  :commands exwm-randr-enable
   :config
   (defun dnixty/exwm-change-screen-hook ()
     (let ((xrandr-output-regexp "\n\\([^ ]+\\) connected ")
@@ -214,9 +214,11 @@
            "--output" (match-string 1) "--primary" "--auto"
            "--output" default-output "--off")
           (setq exwm-randr-workspace-monitor-plist (list 0 (match-string 1))))
-        (dnixty/set-font))))
+        (dnixty/set-font)
+        (exwm-randr-refresh))))
   (exwm-randr-enable)
   :hook (exwm-randr-screen-change . dnixty/exwm-change-screen-hook))
+
 
 (use-package helm-exwm
   :config
@@ -280,6 +282,7 @@
   (setq helm-split-window-default-side 'right)
   (setq helm-window-prefer-horizontal-split t)
   (setq helm-completion-style "helm-flex")
+
   (helm-top-poll-mode)
   :bind (("C-c h" . helm-command-prefix)
          ([remap execute-extended-command] . helm-M-x)
