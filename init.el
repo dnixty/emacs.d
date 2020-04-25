@@ -27,13 +27,6 @@
 ;;; 2. Base settings
 ;;; --------------------------------------------------------------------
 
-;; Mouse behaviour
-(use-package mouse
-  :init
-  (setq mouse-autoselect-window t)
-  (setq make-pointer-invisible t)
-  (tooltip-mode -1))
-
 ;; Edit modeline "lighters"
 (use-package diminish)
 
@@ -93,6 +86,13 @@
   (setq auto-save-default nil)
   (setq auto-save-list-file-prefix nil))
 
+;; Mouse behaviour
+(use-package mouse
+  :init
+  (setq mouse-autoselect-window t)
+  (setq make-pointer-invisible t)
+  (tooltip-mode -1))
+
 
 ;;; --------------------------------------------------------------------
 ;;; 3. Window manager
@@ -100,6 +100,7 @@
 
 ;; Exwm
 (use-package exwm
+  :after mouse
   :config
   (defun dnixty/exwm-rename-buffer ()
     (interactive)
