@@ -365,11 +365,17 @@
   (global-unset-key (kbd "C-x C-z"))
   (global-unset-key (kbd "C-h h")))
 
+
 ;; Theme
-(use-package color-theme-sanityinc-tomorrow
+(use-package modus-operandi-theme
+  :demand t)
+(use-package modus-vivendi-theme
+  :demand t)
+(use-package emacs
+  :after (modus-operandi-theme modus-vivendi-theme)
   :init
   (setq custom-safe-themes t)
-  (setq-default custom-enabled-themes '(sanityinc-tomorrow-day))
+  (setq-default custom-enabled-themes '(modus-operandi))
   :config
   (defun dnixty/reapply-themes ()
     "Forcibly load the themes listed in `custom-enabled-themes'."
@@ -377,15 +383,28 @@
       (unless (custom-theme-p theme)
         (load-theme theme)))
     (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
+  (defun dnixty/modus-operandi ()
+    "Enable some Modus Operandi variables and load the theme."
+    (setq custom-enabled-themes '(modus-operandi))
+    (setq modus-operandi-theme-slanted-constructs t)
+    (setq modus-operandi-theme-bold-constructs t)
+    (setq modus-operandi-theme-scale-headings nil)
+    (setq modus-operandi-theme-proportional-fonts t)
+    (dnixty/reapply-themes))
+  (defun dnixty/modus-vivendi ()
+    "Enable some Modus Vivendi variables and load the theme."
+    (setq custom-enabled-themes '(modus-vivendi))
+    (setq modus-vivendi-theme-slanted-constructs t)
+    (setq modus-vivendi-theme-bold-constructs t)
+    (setq modus-vivendi-theme-scale-headings nil)
+    (setq modus-vivendi-theme-proportional-fonts t)
+    (dnixty/reapply-themes))
   (defun dnixty/theme-toggle ()
     "Toggle between sanityinc-tomorrow themes."
     (interactive)
-    (cond ((eq (car custom-enabled-themes) 'sanityinc-tomorrow-day)
-           (load-theme 'sanityinc-tomorrow-night))
-          ((eq (car custom-enabled-themes) 'sanityinc-tomorrow-night)
-           (load-theme 'sanityinc-tomorrow-bright))
-          ((eq (car custom-enabled-themes) 'sanityinc-tomorrow-bright)
-           (load-theme 'sanityinc-tomorrow-day))))
+    (if (eq (car custom-enabled-themes) 'modus-operandi)
+        (dnixty/modus-vivendi)
+      (dnixty/modus-operandi)))
   :hook (after-init . dnixty/reapply-themes)
   :bind ([f5] . dnixty/theme-toggle))
 
