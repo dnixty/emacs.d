@@ -388,7 +388,7 @@
     "Enable some Modus Operandi variables and load the theme."
     (setq custom-enabled-themes '(modus-operandi))
     (setq modus-operandi-theme-slanted-constructs t)
-    (setq modus-operandi-theme-bold-constructs t)
+    (setq modus-operandi-theme-bold-constructs nil)
     (setq modus-operandi-theme-scale-headings nil)
     (setq modus-operandi-theme-proportional-fonts t)
     (dnixty/reapply-themes))
@@ -396,7 +396,7 @@
     "Enable some Modus Vivendi variables and load the theme."
     (setq custom-enabled-themes '(modus-vivendi))
     (setq modus-vivendi-theme-slanted-constructs t)
-    (setq modus-vivendi-theme-bold-constructs t)
+    (setq modus-vivendi-theme-bold-constructs nil)
     (setq modus-vivendi-theme-scale-headings nil)
     (setq modus-vivendi-theme-proportional-fonts t)
     (dnixty/reapply-themes))
