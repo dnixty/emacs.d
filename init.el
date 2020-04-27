@@ -524,7 +524,7 @@
 ;;; 7. Applicatons and utilities
 ;;; --------------------------------------------------------------------
 
-;; Calendar
+;;; Calendar
 (use-package calendar
   :config
   (setq calendar-week-start-day 1)
@@ -533,18 +533,18 @@
   (setq calendar-longitude -0.076132)
   :hook (calendar-today-visible . calendar-mark-today))
 
-;; Org
+;;; Org
 (use-package org
   :config
   (setq org-hide-leading-stars t))
 
-;; Encryption
+;;; Encryption
 (use-package pinentry
   :config
   (setq-default epa-pinentry-mode 'loopback)
   :hook (after-init . pinentry-start))
 
-;; Eshell
+;;; Eshell
 (use-package eshell
   :config
   (setq eshell-history-size 1024)
@@ -562,19 +562,19 @@
               ("<tab>" . company-complete-selection))
   :hook (eshell-mode . esh-autosuggest-mode))
 
-;; Helm Pass
+;;; Helm Pass
 (use-package helm-pass)
 
-;; Ledger
+;;; Ledger
 (use-package ledger-mode
   :pin manual
   :mode "\\.ldg$"
   :init)
 
-;; Magit
+;;; Magit
 (use-package magit)
 
-;; Slime
+;;; Slime
 (use-package slime
   :pin manual
   :commands slime
