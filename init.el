@@ -543,6 +543,11 @@
 ;; Nix Mode
 (use-package nix-mode)
 
+;; Recognise subwords
+(use-package subword
+  :delight
+  :hook (prog-mode . subword-mode))
+
 
 ;;; --------------------------------------------------------------------
 ;;; 7. Applicatons and utilities
