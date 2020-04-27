@@ -522,6 +522,12 @@
     (browse-url (format "%s%s" dnixty/dictionary-root word)))
   :bind ("M-#" . dnixty/lookup-word))
 
+;; Winner mode
+(use-package winner
+  :hook (after-init . winner-mode)
+  :bind (("<s-right>" . winner-redo)
+         ("<s-left>" . winner-undo)))
+
 ;; Collection of unpackaged commands or tweaks
 (use-package emacs
   :config
