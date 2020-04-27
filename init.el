@@ -368,7 +368,8 @@
   (setq inhibit-startup-screen t)
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
-  (global-unset-key (kbd "C-h h")))
+  (global-unset-key (kbd "C-h h"))
+  (global-unset-key (kbd "M-i")))
 
 
 ;; Theme
@@ -537,7 +538,8 @@
   :config
   (setq split-height-threshold nil)
   (setq split-width-threshold 130)
-  :bind ("C-x k" . kill-this-buffer))
+  :bind (("C-x k" . kill-this-buffer)
+         ("M-i" . imenu)))
 
 
 ;;; --------------------------------------------------------------------
