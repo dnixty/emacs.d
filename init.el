@@ -128,6 +128,8 @@
   (exwm-input-set-key (kbd "s-b") #'helm-mini)
   (exwm-input-set-key (kbd "s-B") #'helm-filtered-bookmarks)
   (exwm-input-set-key (kbd "s-c") #'helm-resume)
+  (exwm-input-set-key (kbd "s-d") #'dired)
+  (exwm-input-set-key (kbd "s-D") #'dired-other-window)
   (exwm-input-set-key (kbd "s-f") #'helm-find-files)
   (exwm-input-set-key (kbd "s-g") #'magit-status)
   (exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
