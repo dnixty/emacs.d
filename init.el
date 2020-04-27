@@ -598,5 +598,16 @@
   :config
   (pdf-tools-install))
 
+;;; Dired
+(use-package dired
+  :config
+  (setq dired-recursive-copies 'always)
+  (setq dired-recursive-deletes 'always)
+  (setq dired-listing-switches
+        "-AGFhlv --group-directories-first --time-style=long-iso")
+  (setq dired-dwim-target t)
+  :hook ((dired-mode . dired-hide-details-mode)
+         (dired-mode . hl-line-mode)
+         (dired-mode . auto-revert-mode)))
 
 ;;; init.el ends here
