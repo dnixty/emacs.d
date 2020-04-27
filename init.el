@@ -508,6 +508,10 @@
   :config
   (global-eldoc-mode 1))
 
+(use-package flyspell
+  :config
+  (setq ispell-program-name "aspell"))
+
 ;; Collection of unpackaged commands or tweaks
 (use-package emacs
   :config
