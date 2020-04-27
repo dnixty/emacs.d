@@ -512,6 +512,16 @@
   :config
   (setq ispell-program-name "aspell"))
 
+;; Lookup word
+(use-package ispell
+  :commands ispell-get-word
+  :config
+  (defconst dnixty/dictionary-root "https://dictionary.cambridge.org/dictionary/english/")
+  (defun dnixty/lookup-word (word)
+    (interactive (list (save-excursion (car (ispell-get-word nil)))))
+    (browse-url (format "%s%s" dnixty/dictionary-root word)))
+  :bind ("M-#" . dnixty/lookup-word))
+
 ;; Collection of unpackaged commands or tweaks
 (use-package emacs
   :config
