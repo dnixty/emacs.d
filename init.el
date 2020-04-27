@@ -528,6 +528,10 @@
   :bind (("<s-right>" . winner-redo)
          ("<s-left>" . winner-undo)))
 
+;; Delete selection
+(use-package delsel
+  :hook (after-init . delete-selection-mode))
+
 ;; Collection of unpackaged commands or tweaks
 (use-package emacs
   :config
