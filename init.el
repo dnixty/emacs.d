@@ -89,7 +89,6 @@
 ;; Mouse behaviour
 (use-package mouse
   :init
-  (setq mouse-autoselect-window t)
   (setq make-pointer-invisible t)
   (tooltip-mode -1))
 
