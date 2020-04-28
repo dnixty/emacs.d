@@ -121,8 +121,9 @@
   (dolist (k '(XF86AudioLowerVolume
                XF86AudioRaiseVolume
                XF86AudioMute
-               print))
-  (cl-pushnew k exwm-input-prefix-keys))
+               print
+               f5))
+    (cl-pushnew k exwm-input-prefix-keys))
   ;; Global keys
   (exwm-input-set-key (kbd "s-0") #'delete-window)
   (exwm-input-set-key (kbd "s-1") #'delete-other-windows)
