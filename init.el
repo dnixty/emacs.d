@@ -17,6 +17,11 @@
 (eval-when-compile
   (require 'use-package))
 
+;; Configure `use-package' prior to loading it.
+(eval-and-compile
+  (setq use-package-enable-imenu-support t)
+  (setq use-package-hook-name-suffix nil))
+
 ;; Move user-emacs-directory
 (use-package emacs
   :config
@@ -55,7 +60,7 @@
       (if (<= (display-pixel-width) 1366)
           (dnixty/laptop-font)
         (dnixty/desktop-font))))
-  :hook (window-setup . dnixty/set-font))
+  :hook (window-setup-hook . dnixty/set-font))
 
 ;; Unique names for buffers
 (use-package uniquify
@@ -66,7 +71,7 @@
 (use-package saveplace
   :config
   (save-place-mode)
-  :hook (before-save save-place-kill-emacs-hook))
+  :hook (before-save-hook save-place-kill-emacs))
 
 ;; Backups
 (use-package emacs
@@ -92,10 +97,91 @@
   (setq make-pointer-invisible t)
   (tooltip-mode -1))
 
+;; Turn off large file warning threshold
+(use-package emacs
+  :config
+  (setq large-file-warning-threshold nil))
+
+;; Minibuffer history
+(use-package savehist
+  :config
+  (setq history-length 30000)
+  (savehist-mode 1))
+
+;; Recentf
+(use-package recentf
+  :config
+  (setq recentf-max-saved-items 200)
+  (setq recentf-show-file-shortcuts-flag nil)
+  :hook (after-init-hook . recentf-mode))
 
 ;;; --------------------------------------------------------------------
 ;;; 3. Window manager
 ;;; --------------------------------------------------------------------
+
+(use-package window
+  :init
+  (setq display-buffer-alist
+        '(;; top side window
+          ("\\*\\(Flycheck\\|Flymake\\|Package-Lint\\|vc-git :\\).*"
+           (display-buffer-in-side-window)
+           (window-height . 0.16)
+           (side . top)
+           (slot . 0)
+           (window-parameters . ((no-other-window . t))))
+          ("\\*\\(Backtrace\\|Warnings\\|Compile-Log\\|Messages\\)\\*"
+           (display-buffer-in-side-window)
+           (window-height . 0.16)
+           (side . top)
+           (slot . 1)
+           (window-parameters . ((no-other-window . t))))
+          ;; bottom side window
+          ("\\*\\(Output\\|Register Preview\\).*"
+           (display-buffer-in-side-window)
+           (window-width . 0.16)       ; See the :hook
+           (side . bottom)
+           (slot . -1)
+           (window-parameters . ((no-other-window . t))))
+          (".*\\*Completions.*"
+           (display-buffer-in-side-window)
+           (window-height . 0.16)
+           (side . bottom)
+           (slot . 0)
+           (window-parameters . ((no-other-window . t))))
+          ("^\\(\\*e?shell\\|vterm\\).*"
+           (display-buffer-in-side-window)
+           (window-height . 0.16)
+           (side . bottom)
+           (slot . 1))
+          ;; left side window
+          ("\\*Help.*"
+           (display-buffer-in-side-window)
+           (window-width . 0.20)       ; See the :hook
+           (side . left)
+           (slot . 0)
+           (window-parameters . ((no-other-window . t))))
+          ;; right side window
+          ("\\*Faces\\*"
+           (display-buffer-in-side-window)
+           (window-width . 0.25)
+           (side . right)
+           (slot . 0)
+           (window-parameters . ((no-other-window . t)
+                                 (mode-line-format . (" "
+                                                      mode-line-buffer-identification)))))
+          ("\\*Custom.*"
+           (display-buffer-in-side-window)
+           (window-width . 0.25)
+           (side . right)
+           (slot . 1))
+          ;; bottom buffer (NOT side window)
+          ("\\*\\vc-\\(incoming\\|outgoing\\).*"
+           (display-buffer-at-bottom))))
+  (setq window-combination-resize t)
+  (setq even-window-sizes 'height-only)
+  :hook ((help-mode-hook . visual-line-mode)
+         (custom-mode-hook . visual-line-mode))
+  :bind ("C-x +" . balance-windows-area))
 
 ;; Exwm
 (use-package exwm
@@ -117,6 +203,22 @@
   (defun dnixty/switch-to-other ()
     (interactive)
     (switch-to-buffer (other-buffer (current-buffer) 1)))
+  (defun prot/describe-symbol-at-point (&optional arg)
+    "Get help (documentation) for the symbol at point.
+
+With a prefix argument, switch to the *Help* window.  If that is
+already focused, switch to the most recently used window
+instead."
+    (interactive "P")
+    (let ((symbol (symbol-at-point)))
+      (when symbol
+        (describe-symbol symbol)))
+    (when arg
+      (let ((help (get-buffer-window "*Help*")))
+        (when help
+          (if (not (eq (selected-window) help))
+              (select-window help)
+            (select-window (get-mru-window)))))))
   ;; Make sure that XF86 keys work in exwm buffers as well
   (dolist (k '(XF86AudioLowerVolume
                XF86AudioRaiseVolume
@@ -125,27 +227,32 @@
                f5))
     (cl-pushnew k exwm-input-prefix-keys))
   ;; Global keys
+  (exwm-input-set-key (kbd "s-&") #'(lambda (command)
+                                      (interactive (list (read-shell-command "$ ")))
+                                      (start-process-shell-command command nil command)))
   (exwm-input-set-key (kbd "s-0") #'delete-window)
   (exwm-input-set-key (kbd "s-1") #'delete-other-windows)
   (exwm-input-set-key (kbd "s-2") #'split-window-below)
   (exwm-input-set-key (kbd "s-3") #'split-window-right)
-  (exwm-input-set-key (kbd "s-8") #'helm-ucs)
-  (exwm-input-set-key (kbd "s-b") #'helm-mini)
-  (exwm-input-set-key (kbd "s-B") #'helm-filtered-bookmarks)
-  (exwm-input-set-key (kbd "s-c") #'helm-resume)
+  (exwm-input-set-key (kbd "s-b") #'switch-to-buffer)
+  (exwm-input-set-key (kbd "s-B") #'switch-to-buffer-other-window)
   (exwm-input-set-key (kbd "s-d") #'dired)
   (exwm-input-set-key (kbd "s-D") #'dired-other-window)
-  (exwm-input-set-key (kbd "s-f") #'helm-find-files)
+  (exwm-input-set-key (kbd "s-f") #'find-file)
+  (exwm-input-set-key (kbd "s-F") #'find-file-other-window)
   (exwm-input-set-key (kbd "s-g") #'magit-status)
+  (exwm-input-set-key (kbd "s-h") #'prot/describe-symbol-at-point)
+  (exwm-input-set-key (kbd "s-H") #'(lambda ()
+                                      (interactive)
+                                      (prot/describe-symbol-at-point '(4))))
   (exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
   (exwm-input-set-key (kbd "s-k") #'kill-this-buffer)
   (exwm-input-set-key (kbd "s-o") #'other-window)
   (exwm-input-set-key (kbd "s-O") #'exwm-layout-toggle-fullscreen)
-  (exwm-input-set-key (kbd "s-p") #'projectile-command-map)
-  (exwm-input-set-key (kbd "s-P") #'helm-pass)
-  (exwm-input-set-key (kbd "s-r") #'helm-run-external-command)
+  (exwm-input-set-key (kbd "s-q") #'window-toggle-side-windows)
+  (exwm-input-set-key (kbd "s-r") #'prot/icomplete-recentf)
   (exwm-input-set-key (kbd "s-R") #'exwm-reset)
-  (exwm-input-set-key (kbd "s-x") #'helm-register)
+  (exwm-input-set-key (kbd "s-v") #'prot/focus-minibuffer-or-completions)
   (exwm-input-set-key (kbd "s-X") #'exwm-input-toggle-keyboard)
   (exwm-input-set-key (kbd "s-Z") #'dnixty/suspend-to-sleep)
   (exwm-input-set-key (kbd "s-SPC") #'exwm-floating-toggle-floating)
@@ -155,6 +262,8 @@
   (exwm-input-set-key (kbd "C-s-n") #'windmove-down)
   (exwm-input-set-key (kbd "C-s-p") #'windmove-up)
   (exwm-input-set-key (kbd "C-s-f") #'windmove-right)
+  (exwm-input-set-key (kbd "s-<right>") #'winner-redo)
+  (exwm-input-set-key (kbd "s-<left>") #'winner-undo)
   (exwm-input-set-key (kbd "<print>") #'dnixty/capture-screen)
   ;; Simulation keys
   (exwm-input-set-simulation-keys
@@ -186,11 +295,11 @@
   (setq window-divider-default-right-width 2)
   (window-divider-mode)
   :bind (("C-x C-c" . save-buffers-kill-emacs))
-  :hook ((exwm-update-title . dnixty/exwm-rename-buffer)
-         (exwm-update-class . dnixty/exwm-rename-buffer)
-         (exwm-update-title . dnixty/exwm-rename-buffer)
-         (exwm-floating-setup . exwm-layout-hide-mode-line)
-         (exwm-floating-exit . exwm-layout-show-mode-line)))
+  :hook ((exwm-update-title-hook . dnixty/exwm-rename-buffer)
+         (exwm-update-class-hook . dnixty/exwm-rename-buffer)
+         (exwm-update-title-hook . dnixty/exwm-rename-buffer)
+         (exwm-floating-setup-hook . exwm-layout-hide-mode-line)
+         (exwm-floating-exit-hook . exwm-layout-show-mode-line)))
 
 (use-package exwm-randr
   :after exwm
@@ -225,21 +334,7 @@
         (dnixty/set-font)
         (exwm-randr-refresh))))
   (exwm-randr-enable)
-  :hook (exwm-randr-screen-change . dnixty/exwm-change-screen-hook))
-
-
-(use-package helm-exwm
-  :config
-  (use-package helm-bookmark)
-  (add-to-list 'helm-source-names-using-follow "EXWM buffers")
-  (setq helm-exwm-emacs-buffers-source (helm-exwm-build-emacs-buffers-source))
-  (setq helm-exwm-source (helm-exwm-build-source))
-  (setq helm-mini-default-sources `(helm-exwm-emacs-buffers-source
-                                    helm-exwm-source
-                                    helm-source-recentf
-                                    helm-source-bookmarks
-                                    helm-source-bookmark-set
-                                    helm-source-buffer-not-found)))
+  :hook (exwm-randr-screen-change-hook . dnixty/exwm-change-screen-hook))
 
 ;; Pulseaudio
 (use-package pulseaudio-control
@@ -250,7 +345,6 @@
   (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'pulseaudio-control-decrease-volume)
   (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'pulseaudio-control-increase-volume)
   (exwm-input-set-key (kbd "<XF86AudioMute>") #'pulseaudio-control-toggle-current-sink-mute))
-
 
 ;; Display current time
 (use-package time
@@ -274,81 +368,320 @@
 ;;; 4. Selection narrowing and search
 ;;; --------------------------------------------------------------------
 
-;; Helm
-(use-package helm-config)
-
-(use-package helm
+(use-package minibuffer
   :config
-  (global-unset-key (kbd "C-x c"))
-  (setq helm-show-completion-display-function nil)
-  (setq helm-reuse-last-window-split-state t)
-  (setq helm-echo-input-in-header-line t)
-  (setq helm-grep-save-buffer-name-no-confirm t)
-  (setq helm-buffers-end-truncated-string "…")
-  (setq helm-buffer-max-length 22)
-  (setq helm-window-show-buffers-function 'helm-window-mosaic-fn)
-  (setq helm-split-window-default-side 'right)
-  (setq helm-window-prefer-horizontal-split t)
-  (setq helm-completion-style "helm-flex")
+  ;; Aggressive completion style for out-of-order groups of matches
+  (use-package orderless
+    :config
+    (setq orderless-component-matching-styles
+          '(orderless-regexp
+            orderless-flex))
+    :bind (:map minibuffer-local-completion-map
+                ("SPC" . nil)))
+  (setq completion-styles
+        '(basic partial-completion initials orderless))
+  (setq completion-category-defaults nil)
+  (setq completion-cycle-threshold 3)
+  (setq completion-pcm-complete-word-inserts-delimiters t)
+  (setq completion-show-help nil)
+  (setq completion-ignore-case t)
+  (setq read-buffer-completion-ignore-case t)
+  (setq read-file-name-completion-ignore-case t)
+  (setq completions-format 'vertical)
+  (setq enable-recursive-minibuffers t)
+  (setq read-answer-short t)
+  (setq resize-mini-windows t)
 
-  (helm-top-poll-mode)
-  :bind (("C-c h" . helm-command-prefix)
-         ([remap execute-extended-command] . helm-M-x)
-         ([remap find-file] . helm-find-files)
-         ([remap occur] . helm-occur)
-         ([remap list-buffers] . helm-mini)
-         ([remap yank-pop] . helm-show-kill-ring)
-         ([remap apropos-command] . helm-apropos)
-         ([remap query-replace-regexp] . helm-regexp)
-         ("C-h SPC" . helm-all-mark-rings)
-         :map helm-map
-         ("<tab>" . helm-execute-persistent-action)
-         ("C-i" . helm-execute-persistent-action)
-         ("C-z" . helm-select-action))
-  :hook ((after-init . helm-mode)
-         (helm-mode . (lambda () (diminish 'helm-mode)))))
+  (minibuffer-depth-indicate-mode 1)
+  (minibuffer-electric-default-mode 1)
 
-;; Helm descbinds
-(use-package helm-descbinds
-  :after helm
-  :hook (after-init . helm-descbinds-mode))
+  (defun prot/focus-minibuffer ()
+    "Focus the active minibuffer.
 
-;; Eshell
-(use-package helm-eshell
+Bind this to `completion-list-mode-map' to M-v to easily jump
+between the list of candidates present in the \\*Completions\\*
+buffer and the minibuffer (because by default M-v switches to the
+completions if invoked from inside the minibuffer."
+    (interactive)
+    (let ((mini (active-minibuffer-window)))
+      (when mini
+        (select-window mini))))
+
+  (defun prot/focus-minibuffer-or-completions ()
+    "Focus the active minibuffer or the \\*Completions\\*.
+
+If both the minibuffer and the Completions are present, this
+command will first move per invocation to the former, then the
+latter, and then continue to switch between the two.
+
+The continuous switch is essentially the same as running
+`prot/focus-minibuffer' and `switch-to-completions' in
+succession."
+    (interactive)
+    (let* ((mini (active-minibuffer-window))
+           (completions (get-buffer-window "*Completions*")))
+      (cond ((and mini
+                  (not (minibufferp)))
+             (select-window mini nil))
+            ((and completions
+                  (not (eq (selected-window)
+                           completions)))
+             (select-window completions nil)))))
+
+  :bind (:map completion-list-mode-map
+              ("n" . next-line)
+              ("p" . previous-line)
+              ("f" . next-completion)
+              ("b" . previous-completion)
+              ("M-v" . prot/focus-minibuffer)))
+
+(use-package icomplete
+  :demand
+  :after minibuffer
   :config
-  (defun dnixty/helm/eshell-set-keys ()
-    (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
-    (define-key eshell-mode-map (kbd "M-p") 'helm-eshell-history)
-    (define-key eshell-mode-map (kbd "M-s") nil)
-    (define-key eshell-mode-map (kbd "M-s f") 'helm-eshell-prompts-all))
-  :hook (eshell-mode . dnixty/helm/eshell-set-keys))
+  (setq icomplete-delay-completions-threshold 100)
+  (setq icomplete-max-delay-chars 2)
+  (setq icomplete-compute-delay 0.2)
+  (setq icomplete-show-matches-on-no-input t)
+  (setq icomplete-hide-common-prefix nil)
+  (setq icomplete-prospects-height 1)
+  (setq icomplete-separator (propertize " ┆ " 'face 'shadow))
+  (setq icomplete-with-completion-tables t)
+  (setq icomplete-in-buffer t)
 
-;; Slime
-(use-package helm-slime
-  :config
-  (defun dnixty/helm/slime-set-keys ()
-    (define-key slime-repl-mode-map (kbd "M-p") 'helm-slime-repl-history)
-    (define-key slime-repl-mode-map (kbd "M-s") nil)
-    (define-key slime-repl-mode-map (kbd "M-s f") 'helm-comint-prompts-all)
-    (define-key slime-autodoc-mode-map (kbd "C-c C-d C-a") 'helm-slime-apropos)
-    (define-key slime-repl-mode-map (kbd "C-c C-x c") 'helm-slime-list-connections)
-    (define-key slime-repl-mode-map (kbd "<tab>") 'helm-slime-complete))
-  :hook (slime-repl-mode . dnixty/helm/slime-set-keys))
+  (fido-mode -1)
+  (icomplete-mode 1)
 
-;; Projectile
-(use-package projectile
-  :diminish
-  :config
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (setq projectile-completion-system 'helm)
-  (setq projectile-project-search-path '("~/src"))
-  (projectile-mode))
+  (defun prot/icomplete-kill-or-insert-candidate (&optional arg)
+    "Place the matching candidate to the top of the `kill-ring'.
+This will keep the minibuffer session active.
 
-(use-package helm-projectile
-  :after projectile
+With \\[universal-argument] insert the candidate in the most
+recently used buffer, while keeping focus on the minibuffer.
+
+With \\[universal-argument] \\[universal-argument] insert the
+candidate and immediately exit all recursive editing levels and
+active minibuffers.
+
+Bind this function in `icomplete-minibuffer-map'."
+    (interactive "*P")
+    (let ((candidate (car completion-all-sorted-completions)))
+      (when (and (minibufferp)
+                 (bound-and-true-p icomplete-mode))
+        (cond ((eq arg nil)
+               (kill-new candidate))
+              ((= (prefix-numeric-value arg) 4)
+               (with-minibuffer-selected-window (insert candidate)))
+              ((= (prefix-numeric-value arg) 16)
+               (with-minibuffer-selected-window (insert candidate))
+               (top-level))))))
+
+  (defun prot/icomplete-minibuffer-truncate ()
+    "Truncate minibuffer lines in `icomplete-mode'.
+  This should only affect the horizontal layout and is meant to
+  enforce `icomplete-prospects-height' being set to 1.
+
+  Hook it to `icomplete-minibuffer-setup-hook'."
+    (when (and (minibufferp)
+               (bound-and-true-p icomplete-mode))
+      (setq truncate-lines t)))
+
+  :hook (icomplete-minibuffer-setup-hook . prot/icomplete-minibuffer-truncate)
+  :bind (:map icomplete-minibuffer-map
+              ("<tab>" . icomplete-force-complete)
+              ("<return>" . icomplete-force-complete-and-exit)
+              ("C-j" . exit-minibuffer)
+              ("C-n" . icomplete-forward-completions)
+              ("<right>" . icomplete-forward-completions)
+              ("<down>" . icomplete-forward-completions)
+              ("C-p" . icomplete-backward-completions)
+              ("<left>" . icomplete-backward-completions)
+              ("<up>" . icomplete-backward-completions)
+              ("<C-backspace>" . icomplete-fido-backward-updir)
+              ("M-o w" . prot/icomplete-kill-or-insert-candidate)
+              ("M-o i" . (lambda ()
+                           (interactive)
+                           (prot/icomplete-kill-or-insert-candidate '(4))))
+              ("M-o j" . (lambda ()
+                           (interactive)
+                           (prot/icomplete-kill-or-insert-candidate '(16))))))
+
+(use-package icomplete-vertical
+  :demand
+  :after (minibuffer icomplete)
   :config
-  (setq projectile-switch-project-action 'helm-projectile)
-  (helm-projectile-on))
+  (setq icomplete-vertical-prospects-height (/ (window-height) 6))
+  (icomplete-vertical-mode -1)
+
+  (defun prot/icomplete-recentf ()
+    "Open `recent-list' item in a new buffer.
+
+The user's $HOME directory is abbreviated as a tilde."
+    (interactive)
+    (icomplete-vertical-do ()
+      (let ((files (mapcar 'abbreviate-file-name recentf-list)))
+        (find-file
+         (completing-read "Open recentf entry: " files nil t)))))
+
+  (defun prot/icomplete-font-family-list ()
+    "Add item from the `font-family-list' to the `kill-ring'.
+
+This allows you to save the name of a font, which can then be
+used in commands such as `set-frame-font'."
+    (interactive)
+    (icomplete-vertical-do ()
+      (kill-new
+       (completing-read "Copy font family: "
+                        (print (font-family-list))
+                        nil t))))
+
+  (defun prot/icomplete-yank-kill-ring ()
+    "Insert the selected `kill-ring' item directly at point.
+When region is active, `delete-region'.
+
+Sorting of the `kill-ring' is disabled.  Items appear as they
+normally would when calling `yank' followed by `yank-pop'."
+    (interactive)
+    (let ((kills                    ; do not sort items
+           (lambda (string pred action)
+             (if (eq action 'metadata)
+                 '(metadata (display-sort-function . identity)
+                            (cycle-sort-function . identity))
+               (complete-with-action
+                action kill-ring string pred)))))
+      (icomplete-vertical-do
+          (:separator 'dotted-line :height (/ (window-height) 4))
+        (when (use-region-p)
+          (delete-region (region-beginning) (region-end)))
+        (insert
+         (completing-read "Yank from kill ring: " kills nil t)))))
+
+  :bind (("M-y" . prot/icomplete-yank-kill-ring)
+         :map icomplete-minibuffer-map
+         ("C-v" . icomplete-vertical-toggle)))
+
+(use-package project
+  :after (minibuffer icomplete icomplete-vertical)
+  :config
+  (defun prot/project-find-file ()
+    "Find a file that belongs to the current project."
+    (interactive)
+    (icomplete-vertical-do ()
+      (project-find-file)))
+
+  (defun prot/project-or-dir-find-subdirectory-recursive ()
+    "Recursive find subdirectory of project or directory.
+
+This command has the potential for infinite recursion: use it
+wisely or prepare to use \\[keyboard-quit]."
+    (interactive)
+    (let* ((project (vc-root-dir))
+           (dir (if project project default-directory))
+           (contents (directory-files-recursively dir ".*" t nil nil))
+           ;; (contents (directory-files dir t))
+           (find-directories (mapcar (lambda (dir)
+                                       (when (file-directory-p dir)
+                                         (abbreviate-file-name dir)))
+                                     contents))
+           (subdirs (delete nil find-directories)))
+      (icomplete-vertical-do ()
+        (dired
+         (completing-read "Find sub-directory: " subdirs nil t dir)))))
+
+  (defun prot/find-file-from-dir-recursive ()
+    "Find file recursively, starting from present dir."
+    (interactive)
+    (let* ((dir default-directory)
+           (files (directory-files-recursively dir ".*" nil t)))
+      (icomplete-vertical-do ()
+        (find-file
+         (completing-read "Find file recursively: " files nil t dir)))))
+
+  (defun prot/find-project ()
+    "Switch to sub-directory at ~/src.
+
+Allows you to switch directly to the root directory of a project
+inside a given location."
+    (interactive)
+    (let* ((path "~/src")
+           (dotless directory-files-no-dot-files-regexp)
+           (project-list (project-combine-directories
+                          (directory-files path t dotless)))
+           (projects (mapcar 'abbreviate-file-name project-list)))
+      (icomplete-vertical-do ()
+        (dired
+         (completing-read "Find project: " projects nil t path)))))
+
+  :bind (("s-p p" . prot/find-project)
+         ("s-p f" . prot/project-find-file)
+         ("s-p z" . prot/find-file-from-dir-recursive)
+         ("s-p d" . prot/project-or-dir-find-subdirectory-recursive)
+         ("s-p l" . find-library)
+         ("s-p C-M-%" . project-query-replace-regexp)))
+
+(use-package emacs
+  :after (minibuffer icomplete icomplete-vertical) ; review those first
+  :config
+  (defun contrib/completing-read-in-region (start end collection &optional predicate)
+    "Prompt for completion of region in the minibuffer if non-unique.
+ Use as a value for `completion-in-region-function'."
+    (let* ((initial (buffer-substring-no-properties start end))
+           (all (completion-all-completions initial collection predicate
+                                            (length initial)))
+           (completion (cond
+                        ((atom all) nil)
+                        ((and (consp all) (atom (cdr all))) (car all))
+                        (t (let ((completion-in-region-function
+                                  #'completion--in-region))
+                             (icomplete-vertical-do (:height (/ (window-height) 5))
+                               (completing-read
+                                "Completion: " collection predicate t initial)))))))
+      (if (null completion)
+          (progn (message "No completion") nil)
+        (delete-region start end)
+        (insert completion)
+        t)))
+
+  (setq completion-in-region-function #'contrib/completing-read-in-region))
+
+(use-package dabbrev
+  :after (minibuffer icomplete icomplete-vertical) ; read those as well
+  :config
+  (setq dabbrev-abbrev-char-regexp "\\sw\\|\\s_")
+  (setq dabbrev-abbrev-skip-leading-regexp "\\$\\|\\*\\|/\\|=")
+  (setq dabbrev-backward-only nil)
+  (setq dabbrev-case-distinction nil)
+  (setq dabbrev-case-fold-search t)
+  (setq dabbrev-case-replace nil)
+  (setq dabbrev-eliminate-newlines nil)
+  (setq dabbrev-upcase-means-case-search t))
+
+(use-package ibuffer
+  :config
+  (setq ibuffer-expert t)
+  (setq ibuffer-display-summary nil)
+  (setq ibuffer-show-empty-filter-groups nil)
+  (setq ibuffer-movement-cycle nil)
+  (setq ibuffer-default-sorting-mode 'filename/process)
+  (setq ibuffer-formats
+        '((mark modified read-only locked " "
+                (name 30 30 :left :elide)
+                " "
+                (size 9 -1 :right)
+                " "
+                (mode 16 16 :left :elide)
+                " " filename-and-process)
+          (mark " "
+                (name 16 -1)
+                " " filename)))
+  :hook (ibuffer-mode-hook . hl-line-mode)
+  :bind (("C-x C-b" . ibuffer)
+         :map ibuffer-mode-map
+         ("* f" . ibuffer-mark-by-file-name-regexp)
+         ("* g" . ibuffer-mark-by-content-regexp) ; "g" is for "grep"
+         ("* n" . ibuffer-mark-by-name-regexp)
+         ("s n" . ibuffer-do-sort-by-alphabetic)  ; "sort name" mnemonic
+         ("/ g" . ibuffer-filter-by-content)))
 
 (use-package isearch
   :diminish)
@@ -371,7 +704,6 @@
   (global-unset-key (kbd "C-x C-z"))
   (global-unset-key (kbd "C-h h"))
   (global-unset-key (kbd "M-i")))
-
 
 ;; Theme
 (use-package modus-operandi-theme
@@ -412,7 +744,7 @@
     (if (eq (car custom-enabled-themes) 'modus-operandi)
         (dnixty/modus-vivendi)
       (dnixty/modus-operandi)))
-  :hook (after-init . dnixty/reapply-themes)
+  :hook (after-init-hook . dnixty/reapply-themes)
   :bind ([f5] . dnixty/theme-toggle))
 
 ;; Initial scratch message
@@ -431,18 +763,18 @@
   :config
   (setq-default fill-column 72)
   (setq column-number-mode t)
-  :hook (after-init . column-number-mode))
+  :hook (after-init-hook . column-number-mode))
 
 ;; Tabs, indentation, and the TAB key
 (use-package emacs
   :config
-  (setq-default tab-width 4)
+  (setq-default tab-always-indent 'complete)
   (setq-default indent-tabs-mode nil))
 
 ;; Auto revert mode
 (use-package autorevert
   :mode ("\\.log\\'" . auto-revert-tail-mode)
-  :hook (after-init . global-auto-revert-mode))
+  :hook (after-init-hook . global-auto-revert-mode))
 
 ;; Preserve contents of system clipboard
 (use-package emacs
@@ -464,31 +796,31 @@
 
 ;; Trailing whitespace
 (use-package emacs
-  :hook ((before-save . whitespace-cleanup)
-         (before-save . (lambda () (delete-trailing-whitespace)))))
+  :hook ((before-save-hook . whitespace-cleanup)
+         (before-save-hook . (lambda () (delete-trailing-whitespace)))))
 
 ;; Parentheses
 (use-package paredit
   :diminish
-  :hook ((emacs-lisp-mode . enable-paredit-mode)
-         (eval-expression-minibuffer-setup . enable-paredit-mode)
-         (ielm-mode . enable-paredit-mode)
-         (lisp-mode . enable-paredit-mode)
-         (lisp-interaction-mode . enable-paredit-mode)
-         (scheme-mode . enable-paredit-mode)))
+  :hook ((emacs-lisp-mode-hook . enable-paredit-mode)
+         (eval-expression-minibuffer-setup-hook . enable-paredit-mode)
+         (ielm-mode-hook . enable-paredit-mode)
+         (lisp-mode-hook . enable-paredit-mode)
+         (lisp-interaction-mode-hook . enable-paredit-mode)
+         (scheme-mode-hook . enable-paredit-mode)))
 (use-package paren
   :config
   (setq show-paren-when-point-in-periphery nil)
   (setq show-paren-when-point-inside-paren t)
   (setq show-paren-delay 0)
-  :hook (after-init . show-paren-mode))
+  :hook (after-init-hook . show-paren-mode))
 (use-package slime
   :config
   (defun dnixty/override-slime-repl-bindings-with-paredit ()
     (define-key slime-repl-mode-map
       (read-kbd-macro paredit-backward-delete-key) nil))
-  :hook ((slime-repl-mode . dnixty/override-slime-repl-bindings-with-paredit)
-         (slime-repl-mode . (lambda () (paredit-mode +1)))))
+  :hook ((slime-repl-mode-hook . dnixty/override-slime-repl-bindings-with-paredit)
+         (slime-repl-mode-hook . (lambda () (paredit-mode +1)))))
 
 ;; Newline characters for file ending
 (use-package emacs
@@ -526,13 +858,11 @@
 
 ;; Winner mode
 (use-package winner
-  :hook (after-init . winner-mode)
-  :bind (("<s-right>" . winner-redo)
-         ("<s-left>" . winner-undo)))
+  :hook (after-init-hook . winner-mode))
 
 ;; Delete selection
 (use-package delsel
-  :hook (after-init . delete-selection-mode))
+  :hook (after-init-hook . delete-selection-mode))
 
 ;; Collection of unpackaged commands or tweaks
 (use-package emacs
@@ -552,8 +882,8 @@
 
 ;; Recognise subwords
 (use-package subword
-  :delight
-  :hook (prog-mode . subword-mode))
+  :diminish
+  :hook (prog-mode-hook . subword-mode))
 
 
 ;;; --------------------------------------------------------------------
@@ -567,7 +897,7 @@
   (setq calendar-date-style 'iso)
   (setq calendar-latitude 51.508530)
   (setq calendar-longitude -0.076132)
-  :hook (calendar-today-visible . calendar-mark-today))
+  :hook (calendar-today-visible-hook . calendar-mark-today))
 
 ;; Org
 (use-package org
@@ -578,7 +908,7 @@
 (use-package pinentry
   :config
   (setq-default epa-pinentry-mode 'loopback)
-  :hook (after-init . pinentry-start))
+  :hook (after-init-hook . pinentry-start))
 
 ;; Eshell
 (use-package eshell
@@ -596,10 +926,7 @@
   (setq esh-autosuggest-delay 0.5)
   :bind (:map esh-autosuggest-active-map
               ("<tab>" . company-complete-selection))
-  :hook (eshell-mode . esh-autosuggest-mode))
-
-;; Helm Pass
-(use-package helm-pass)
+  :hook (eshell-mode-hook . esh-autosuggest-mode))
 
 ;; Ledger
 (use-package ledger-mode
@@ -608,7 +935,8 @@
   :init)
 
 ;; Magit
-(use-package magit)
+;; TODO: fix
+;; (use-package magit)
 
 ;; Slime
 (use-package slime
@@ -620,10 +948,18 @@
         '((sbcl ("sbcl" "--noinform"))
           (clisp ("clisp"))))
   (slime-setup '(slime-fancy)))
-(use-package helm-slime
-  :after slime
+
+;; Password Store
+(use-package password-store
+  :commands (password-store-copy
+             password-store-edit
+             password-store-insert)
   :config
-  (global-helm-slime-mode))
+  (setq password-store-time-before-clipboard-restore 30))
+;; TODO: fix
+;; (use-package password-store-otp)
+(use-package pass
+  :commands pass)
 
 ;; Pdf
 (use-package pdf-tools
@@ -642,8 +978,10 @@
   (setq dired-listing-switches
         "-AGFhlv --group-directories-first --time-style=long-iso")
   (setq dired-dwim-target t)
-  :hook ((dired-mode . dired-hide-details-mode)
-         (dired-mode . hl-line-mode)
-         (dired-mode . auto-revert-mode)))
+  :hook ((dired-mode-hook . dired-hide-details-mode)
+         (dired-mode-hook . hl-line-mode)
+         (dired-mode-hook . auto-revert-mode)))
+(use-package dired-x
+  :after dired)
 
 ;;; init.el ends here
