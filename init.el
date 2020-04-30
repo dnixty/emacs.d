@@ -122,8 +122,7 @@
 (use-package window
   :init
   (setq display-buffer-alist
-        '(;; top side window
-          ("\\*\\(Flycheck\\|Flymake\\|Package-Lint\\|vc-git :\\).*"
+        '(("\\*\\(Flycheck\\|Flymake\\|Package-Lint\\|vc-git :\\).*"
            (display-buffer-in-side-window)
            (window-height . 0.16)
            (side . top)
@@ -135,7 +134,6 @@
            (side . top)
            (slot . 1)
            (window-parameters . ((no-other-window . t))))
-          ;; bottom side window
           ("\\*\\(Output\\|Register Preview\\).*"
            (display-buffer-in-side-window)
            (window-width . 0.16)       ; See the :hook
@@ -153,39 +151,21 @@
            (window-height . 0.16)
            (side . bottom)
            (slot . 1))
-          ;; left side window
           ("\\*Help.*"
            (display-buffer-in-side-window)
            (window-width . 0.20)       ; See the :hook
            (side . left)
            (slot . 0)
            (window-parameters . ((no-other-window . t))))
-          ;; right side window
-          ("\\*Faces\\*"
-           (display-buffer-in-side-window)
-           (window-width . 0.25)
-           (side . right)
-           (slot . 0)
-           (window-parameters . ((no-other-window . t)
-                                 (mode-line-format . (" "
-                                                      mode-line-buffer-identification)))))
-          ("\\*Custom.*"
-           (display-buffer-in-side-window)
-           (window-width . 0.25)
-           (side . right)
-           (slot . 1))
-          ;; bottom buffer (NOT side window)
           ("\\*\\vc-\\(incoming\\|outgoing\\).*"
            (display-buffer-at-bottom))))
   (setq window-combination-resize t)
   (setq even-window-sizes 'height-only)
-  :hook ((help-mode-hook . visual-line-mode)
-         (custom-mode-hook . visual-line-mode))
+  :hook (help-mode-hook . visual-line-mode)
   :bind ("C-x +" . balance-windows-area))
 
 ;; Exwm
 (use-package exwm
-  :after mouse
   :config
   (defun dnixty/exwm-rename-buffer ()
     (interactive)
@@ -203,22 +183,25 @@
   (defun dnixty/switch-to-other ()
     (interactive)
     (switch-to-buffer (other-buffer (current-buffer) 1)))
-  (defun prot/describe-symbol-at-point (&optional arg)
-    "Get help (documentation) for the symbol at point.
-
-With a prefix argument, switch to the *Help* window.  If that is
-already focused, switch to the most recently used window
-instead."
-    (interactive "P")
+  (defun dnixty/describe-symbol-at-point ()
+    (interactive)
     (let ((symbol (symbol-at-point)))
       (when symbol
-        (describe-symbol symbol)))
-    (when arg
-      (let ((help (get-buffer-window "*Help*")))
+        (describe-symbol symbol))))
+  (defun dnixty/describe-symbol-at-point-switch ()
+    (interactive)
+    (dnixty/describe-symbol-at-point)
+    (let ((help (get-buffer-window "*Help*")))
         (when help
           (if (not (eq (selected-window) help))
               (select-window help)
-            (select-window (get-mru-window)))))))
+            (select-window (get-mru-window))))))
+  (defun dnixty/icomplete-recentf ()
+    (interactive)
+    (icomplete-vertical-do ()
+      (let ((files (mapcar 'abbreviate-file-name recentf-list)))
+        (find-file
+         (completing-read "Open recentf entry: " files nil t)))))
   ;; Make sure that XF86 keys work in exwm buffers as well
   (dolist (k '(XF86AudioLowerVolume
                XF86AudioRaiseVolume
@@ -241,29 +224,28 @@ instead."
   (exwm-input-set-key (kbd "s-f") #'find-file)
   (exwm-input-set-key (kbd "s-F") #'find-file-other-window)
   (exwm-input-set-key (kbd "s-g") #'magit-status)
-  (exwm-input-set-key (kbd "s-h") #'prot/describe-symbol-at-point)
-  (exwm-input-set-key (kbd "s-H") #'(lambda ()
-                                      (interactive)
-                                      (prot/describe-symbol-at-point '(4))))
+  (exwm-input-set-key (kbd "s-h") #'dnixty/describe-symbol-at-point)
+  (exwm-input-set-key (kbd "s-H") #'dnixty/describe-symbol-at-point-switch)
   (exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
   (exwm-input-set-key (kbd "s-k") #'kill-this-buffer)
   (exwm-input-set-key (kbd "s-o") #'other-window)
   (exwm-input-set-key (kbd "s-O") #'exwm-layout-toggle-fullscreen)
+  (exwm-input-set-key (kbd "s-p") #'password-store-copy)
+  (exwm-input-set-key (kbd "s-P") #'password-store-otp-token-copy)
   (exwm-input-set-key (kbd "s-q") #'window-toggle-side-windows)
-  (exwm-input-set-key (kbd "s-r") #'prot/icomplete-recentf)
+  (exwm-input-set-key (kbd "s-r") #'dnixty/icomplete-recentf)
   (exwm-input-set-key (kbd "s-R") #'exwm-reset)
-  (exwm-input-set-key (kbd "s-v") #'prot/focus-minibuffer-or-completions)
   (exwm-input-set-key (kbd "s-X") #'exwm-input-toggle-keyboard)
   (exwm-input-set-key (kbd "s-Z") #'dnixty/suspend-to-sleep)
   (exwm-input-set-key (kbd "s-SPC") #'exwm-floating-toggle-floating)
+  (exwm-input-set-key (kbd "s-<right>") #'winner-redo)
+  (exwm-input-set-key (kbd "s-<left>") #'winner-undo)
   (exwm-input-set-key (kbd "s-<return>") #'eshell)
   (exwm-input-set-key (kbd "s-<tab>") #'dnixty/switch-to-other)
   (exwm-input-set-key (kbd "C-s-b") #'windmove-left)
   (exwm-input-set-key (kbd "C-s-n") #'windmove-down)
   (exwm-input-set-key (kbd "C-s-p") #'windmove-up)
   (exwm-input-set-key (kbd "C-s-f") #'windmove-right)
-  (exwm-input-set-key (kbd "s-<right>") #'winner-redo)
-  (exwm-input-set-key (kbd "s-<left>") #'winner-undo)
   (exwm-input-set-key (kbd "<print>") #'dnixty/capture-screen)
   ;; Simulation keys
   (exwm-input-set-simulation-keys
@@ -295,8 +277,7 @@ instead."
   (setq window-divider-default-right-width 2)
   (window-divider-mode)
   :bind (("C-x C-c" . save-buffers-kill-emacs))
-  :hook ((exwm-update-title-hook . dnixty/exwm-rename-buffer)
-         (exwm-update-class-hook . dnixty/exwm-rename-buffer)
+  :hook ((exwm-update-class-hook . dnixty/exwm-rename-buffer)
          (exwm-update-title-hook . dnixty/exwm-rename-buffer)
          (exwm-floating-setup-hook . exwm-layout-hide-mode-line)
          (exwm-floating-exit-hook . exwm-layout-show-mode-line)))
@@ -370,7 +351,6 @@ instead."
 
 (use-package minibuffer
   :config
-  ;; Aggressive completion style for out-of-order groups of matches
   (use-package orderless
     :config
     (setq orderless-component-matching-styles
@@ -395,45 +375,18 @@ instead."
   (minibuffer-depth-indicate-mode 1)
   (minibuffer-electric-default-mode 1)
 
-  (defun prot/focus-minibuffer ()
-    "Focus the active minibuffer.
-
-Bind this to `completion-list-mode-map' to M-v to easily jump
-between the list of candidates present in the \\*Completions\\*
-buffer and the minibuffer (because by default M-v switches to the
-completions if invoked from inside the minibuffer."
+  (defun dnixty/focus-minibuffer ()
     (interactive)
     (let ((mini (active-minibuffer-window)))
       (when mini
         (select-window mini))))
-
-  (defun prot/focus-minibuffer-or-completions ()
-    "Focus the active minibuffer or the \\*Completions\\*.
-
-If both the minibuffer and the Completions are present, this
-command will first move per invocation to the former, then the
-latter, and then continue to switch between the two.
-
-The continuous switch is essentially the same as running
-`prot/focus-minibuffer' and `switch-to-completions' in
-succession."
-    (interactive)
-    (let* ((mini (active-minibuffer-window))
-           (completions (get-buffer-window "*Completions*")))
-      (cond ((and mini
-                  (not (minibufferp)))
-             (select-window mini nil))
-            ((and completions
-                  (not (eq (selected-window)
-                           completions)))
-             (select-window completions nil)))))
 
   :bind (:map completion-list-mode-map
               ("n" . next-line)
               ("p" . previous-line)
               ("f" . next-completion)
               ("b" . previous-completion)
-              ("M-v" . prot/focus-minibuffer)))
+              ("M-v" . dnixty/focus-minibuffer)))
 
 (use-package icomplete
   :demand
@@ -452,59 +405,19 @@ succession."
   (fido-mode -1)
   (icomplete-mode 1)
 
-  (defun prot/icomplete-kill-or-insert-candidate (&optional arg)
-    "Place the matching candidate to the top of the `kill-ring'.
-This will keep the minibuffer session active.
-
-With \\[universal-argument] insert the candidate in the most
-recently used buffer, while keeping focus on the minibuffer.
-
-With \\[universal-argument] \\[universal-argument] insert the
-candidate and immediately exit all recursive editing levels and
-active minibuffers.
-
-Bind this function in `icomplete-minibuffer-map'."
-    (interactive "*P")
-    (let ((candidate (car completion-all-sorted-completions)))
-      (when (and (minibufferp)
-                 (bound-and-true-p icomplete-mode))
-        (cond ((eq arg nil)
-               (kill-new candidate))
-              ((= (prefix-numeric-value arg) 4)
-               (with-minibuffer-selected-window (insert candidate)))
-              ((= (prefix-numeric-value arg) 16)
-               (with-minibuffer-selected-window (insert candidate))
-               (top-level))))))
-
-  (defun prot/icomplete-minibuffer-truncate ()
-    "Truncate minibuffer lines in `icomplete-mode'.
-  This should only affect the horizontal layout and is meant to
-  enforce `icomplete-prospects-height' being set to 1.
-
-  Hook it to `icomplete-minibuffer-setup-hook'."
+  (defun dnixty/icomplete-minibuffer-truncate ()
     (when (and (minibufferp)
                (bound-and-true-p icomplete-mode))
       (setq truncate-lines t)))
 
-  :hook (icomplete-minibuffer-setup-hook . prot/icomplete-minibuffer-truncate)
+  :hook (icomplete-minibuffer-setup-hook . dnixty/icomplete-minibuffer-truncate)
   :bind (:map icomplete-minibuffer-map
               ("<tab>" . icomplete-force-complete)
               ("<return>" . icomplete-force-complete-and-exit)
               ("C-j" . exit-minibuffer)
               ("C-n" . icomplete-forward-completions)
-              ("<right>" . icomplete-forward-completions)
-              ("<down>" . icomplete-forward-completions)
               ("C-p" . icomplete-backward-completions)
-              ("<left>" . icomplete-backward-completions)
-              ("<up>" . icomplete-backward-completions)
-              ("<C-backspace>" . icomplete-fido-backward-updir)
-              ("M-o w" . prot/icomplete-kill-or-insert-candidate)
-              ("M-o i" . (lambda ()
-                           (interactive)
-                           (prot/icomplete-kill-or-insert-candidate '(4))))
-              ("M-o j" . (lambda ()
-                           (interactive)
-                           (prot/icomplete-kill-or-insert-candidate '(16))))))
+              ("C-l" . icomplete-fido-backward-updir)))
 
 (use-package icomplete-vertical
   :demand
@@ -513,36 +426,9 @@ Bind this function in `icomplete-minibuffer-map'."
   (setq icomplete-vertical-prospects-height (/ (window-height) 6))
   (icomplete-vertical-mode -1)
 
-  (defun prot/icomplete-recentf ()
-    "Open `recent-list' item in a new buffer.
-
-The user's $HOME directory is abbreviated as a tilde."
+  (defun dnixty/icomplete-yank-kill-ring ()
     (interactive)
-    (icomplete-vertical-do ()
-      (let ((files (mapcar 'abbreviate-file-name recentf-list)))
-        (find-file
-         (completing-read "Open recentf entry: " files nil t)))))
-
-  (defun prot/icomplete-font-family-list ()
-    "Add item from the `font-family-list' to the `kill-ring'.
-
-This allows you to save the name of a font, which can then be
-used in commands such as `set-frame-font'."
-    (interactive)
-    (icomplete-vertical-do ()
-      (kill-new
-       (completing-read "Copy font family: "
-                        (print (font-family-list))
-                        nil t))))
-
-  (defun prot/icomplete-yank-kill-ring ()
-    "Insert the selected `kill-ring' item directly at point.
-When region is active, `delete-region'.
-
-Sorting of the `kill-ring' is disabled.  Items appear as they
-normally would when calling `yank' followed by `yank-pop'."
-    (interactive)
-    (let ((kills                    ; do not sort items
+    (let ((kills
            (lambda (string pred action)
              (if (eq action 'metadata)
                  '(metadata (display-sort-function . identity)
@@ -556,29 +442,23 @@ normally would when calling `yank' followed by `yank-pop'."
         (insert
          (completing-read "Yank from kill ring: " kills nil t)))))
 
-  :bind (("M-y" . prot/icomplete-yank-kill-ring)
+  :bind (("M-y" . dnixty/icomplete-yank-kill-ring)
          :map icomplete-minibuffer-map
          ("C-v" . icomplete-vertical-toggle)))
 
 (use-package project
   :after (minibuffer icomplete icomplete-vertical)
   :config
-  (defun prot/project-find-file ()
-    "Find a file that belongs to the current project."
+  (defun dnixty/project-find-file ()
     (interactive)
     (icomplete-vertical-do ()
       (project-find-file)))
 
-  (defun prot/project-or-dir-find-subdirectory-recursive ()
-    "Recursive find subdirectory of project or directory.
-
-This command has the potential for infinite recursion: use it
-wisely or prepare to use \\[keyboard-quit]."
+  (defun dnixty/project-or-dir-find-subdirectory-recursive ()
     (interactive)
     (let* ((project (vc-root-dir))
            (dir (if project project default-directory))
            (contents (directory-files-recursively dir ".*" t nil nil))
-           ;; (contents (directory-files dir t))
            (find-directories (mapcar (lambda (dir)
                                        (when (file-directory-p dir)
                                          (abbreviate-file-name dir)))
@@ -588,8 +468,7 @@ wisely or prepare to use \\[keyboard-quit]."
         (dired
          (completing-read "Find sub-directory: " subdirs nil t dir)))))
 
-  (defun prot/find-file-from-dir-recursive ()
-    "Find file recursively, starting from present dir."
+  (defun dnixty/find-file-from-dir-recursive ()
     (interactive)
     (let* ((dir default-directory)
            (files (directory-files-recursively dir ".*" nil t)))
@@ -597,11 +476,7 @@ wisely or prepare to use \\[keyboard-quit]."
         (find-file
          (completing-read "Find file recursively: " files nil t dir)))))
 
-  (defun prot/find-project ()
-    "Switch to sub-directory at ~/src.
-
-Allows you to switch directly to the root directory of a project
-inside a given location."
+  (defun dnixty/find-project ()
     (interactive)
     (let* ((path "~/src")
            (dotless directory-files-no-dot-files-regexp)
@@ -612,15 +487,15 @@ inside a given location."
         (dired
          (completing-read "Find project: " projects nil t path)))))
 
-  :bind (("s-p p" . prot/find-project)
-         ("s-p f" . prot/project-find-file)
-         ("s-p z" . prot/find-file-from-dir-recursive)
-         ("s-p d" . prot/project-or-dir-find-subdirectory-recursive)
-         ("s-p l" . find-library)
-         ("s-p C-M-%" . project-query-replace-regexp)))
+  :bind (("s-s p" . dnixty/find-project)
+         ("s-s f" . dnixty/project-find-file)
+         ("s-s z" . dnixty/find-file-from-dir-recursive)
+         ("s-s d" . dnixty/project-or-dir-find-subdirectory-recursive)
+         ("s-s l" . find-library)
+         ("s-s C-M-%" . project-query-replace-regexp)))
 
 (use-package emacs
-  :after (minibuffer icomplete icomplete-vertical) ; review those first
+  :after (minibuffer icomplete icomplete-vertical)
   :config
   (defun contrib/completing-read-in-region (start end collection &optional predicate)
     "Prompt for completion of region in the minibuffer if non-unique.
@@ -645,7 +520,7 @@ inside a given location."
   (setq completion-in-region-function #'contrib/completing-read-in-region))
 
 (use-package dabbrev
-  :after (minibuffer icomplete icomplete-vertical) ; read those as well
+  :after (minibuffer icomplete icomplete-vertical)
   :config
   (setq dabbrev-abbrev-char-regexp "\\sw\\|\\s_")
   (setq dabbrev-abbrev-skip-leading-regexp "\\$\\|\\*\\|/\\|=")
@@ -678,9 +553,9 @@ inside a given location."
   :bind (("C-x C-b" . ibuffer)
          :map ibuffer-mode-map
          ("* f" . ibuffer-mark-by-file-name-regexp)
-         ("* g" . ibuffer-mark-by-content-regexp) ; "g" is for "grep"
+         ("* g" . ibuffer-mark-by-content-regexp)
          ("* n" . ibuffer-mark-by-name-regexp)
-         ("s n" . ibuffer-do-sort-by-alphabetic)  ; "sort name" mnemonic
+         ("s n" . ibuffer-do-sort-by-alphabetic)
          ("/ g" . ibuffer-filter-by-content)))
 
 (use-package isearch
@@ -935,8 +810,7 @@ inside a given location."
   :init)
 
 ;; Magit
-;; TODO: fix
-;; (use-package magit)
+(use-package magit)
 
 ;; Slime
 (use-package slime
@@ -951,14 +825,16 @@ inside a given location."
 
 ;; Password Store
 (use-package password-store
+  :defer
   :commands (password-store-copy
              password-store-edit
              password-store-insert)
   :config
   (setq password-store-time-before-clipboard-restore 30))
-;; TODO: fix
-;; (use-package password-store-otp)
+(use-package password-store-otp
+  :after password-store)
 (use-package pass
+  :defer
   :commands pass)
 
 ;; Pdf
