@@ -203,7 +203,7 @@
             (select-window (get-mru-window))))))
   (defun dnixty/icomplete-recentf ()
     (interactive)
-    (icomplete-vertical-do ()
+    (icomplete-vertical-do (:height (/ (window-height) 4))
       (let ((files (mapcar 'abbreviate-file-name recentf-list)))
         (find-file
          (completing-read "Open recentf entry: " files nil t)))))
@@ -456,7 +456,7 @@
   :config
   (defun dnixty/project-find-file ()
     (interactive)
-    (icomplete-vertical-do ()
+    (icomplete-vertical-do (:height (/ (window-height) 4))
       (project-find-file)))
 
   (defun dnixty/project-or-dir-find-subdirectory-recursive ()
@@ -469,7 +469,7 @@
                                          (abbreviate-file-name dir)))
                                      contents))
            (subdirs (delete nil find-directories)))
-      (icomplete-vertical-do ()
+      (icomplete-vertical-do (:height (/ (window-height) 4))
         (dired
          (completing-read "Find sub-directory: " subdirs nil t dir)))))
 
@@ -477,7 +477,7 @@
     (interactive)
     (let* ((dir default-directory)
            (files (directory-files-recursively dir ".*" nil t)))
-      (icomplete-vertical-do ()
+      (icomplete-vertical-do (:height (/ (window-height) 4))
         (find-file
          (completing-read "Find file recursively: " files nil t dir)))))
 
@@ -488,7 +488,7 @@
            (project-list (project-combine-directories
                           (directory-files path t dotless)))
            (projects (mapcar 'abbreviate-file-name project-list)))
-      (icomplete-vertical-do ()
+      (icomplete-vertical-do (:height (/ (window-height) 4))
         (dired
          (completing-read "Find project: " projects nil t path)))))
 
@@ -564,7 +564,60 @@
          ("/ g" . ibuffer-filter-by-content)))
 
 (use-package isearch
-  :diminish)
+  :diminish
+  :config
+  (setq search-whitespace-regexp ".*?")
+  (setq isearch-lazy-count t)
+  (setq lazy-count-prefix-format "(%s/%s) ")
+  (setq isearch-yank-on-move 'shift)
+  (setq isearch-allow-scroll 'unlimited))
+
+(use-package wgrep
+  :config
+  (setq wgrep-auto-save-buffer t)
+  (setq wgrep-change-readonly-file t))
+
+(use-package rg
+  :after wgrep
+  :config
+  (setq rg-custom-type-aliases nil)
+  (rg-define-search dnixty/rg-vc-or-dir
+    "RipGrep in project root or present directory."
+    :query ask
+    :format regexp
+    :files "everything"
+    :dir (let ((vc (vc-root-dir)))
+           (if vc
+               vc                         ; search root project dir
+             default-directory))          ; or from the current dir
+    :confirm prefix
+    :flags ("--hidden -g !.git"))
+
+  (rg-define-search dnixty/rg-ref-in-dir
+    "RipGrep for thing at point in present directory."
+    :query point
+    :format regexp
+    :files "everything"
+    :dir default-directory
+    :confirm prefix
+    :flags ("--hidden -g !.git"))
+
+  (defun dnixty/rg-save-search-as-name ()
+    "Save `rg' buffer, naming it after the current search query.
+
+This function is meant to be mapped to a key in `rg-mode-map'."
+    (interactive)
+    (let ((pattern (car rg-pattern-history)))
+      (rg-save-search-as-name (concat "«" pattern "»"))))
+
+  :bind (("s-s g" . dnixty/rg-vc-or-dir)
+         ("s-s r" . dnixty/rg-ref-in-dir)
+         :map rg-mode-map
+         ("s" . dnixty/rg-save-search-as-name)
+         ("C-n" . next-line)
+         ("C-p" . previous-line)
+         ("M-n" . rg-next-file)
+         ("M-p" . rg-prev-file)))
 
 ;;; --------------------------------------------------------------------
 ;;; 5. General interface
