@@ -563,6 +563,14 @@
          ("s n" . ibuffer-do-sort-by-alphabetic)
          ("/ g" . ibuffer-filter-by-content)))
 
+(use-package ibuffer-vc
+  :ensure
+  :after (ibuffer vc)
+  :bind (:map ibuffer-mode-map
+              ("/ V" . ibuffer-vc-set-filter-groups-by-vc-root)
+              ("/ <deletechar>" . ibuffer-clear-filter-groups)))
+
+
 (use-package isearch
   :diminish
   :config
