@@ -93,7 +93,12 @@
 
 ;; Mouse behaviour
 (use-package mouse
-  :init
+  :config
+  (setq mouse-wheel-scroll-amount
+        '(1
+          ((shift) . 5)
+          ((meta))
+          ((control) . text-scale)))
   (setq make-pointer-invisible t)
   (tooltip-mode -1))
 
