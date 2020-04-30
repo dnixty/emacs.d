@@ -454,11 +454,6 @@
 (use-package project
   :after (minibuffer icomplete icomplete-vertical)
   :config
-  (defun dnixty/project-find-file ()
-    (interactive)
-    (icomplete-vertical-do (:height (/ (window-height) 4))
-      (project-find-file)))
-
   (defun dnixty/project-or-dir-find-subdirectory-recursive ()
     (interactive)
     (let* ((project (vc-root-dir))
@@ -493,7 +488,7 @@
          (completing-read "Find project: " projects nil t path)))))
 
   :bind (("s-s p" . dnixty/find-project)
-         ("s-s f" . dnixty/project-find-file)
+         ("s-s f" . project-find-file)
          ("s-s z" . dnixty/find-file-from-dir-recursive)
          ("s-s d" . dnixty/project-or-dir-find-subdirectory-recursive)
          ("s-s l" . find-library)
