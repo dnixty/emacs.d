@@ -203,10 +203,9 @@
             (select-window (get-mru-window))))))
   (defun dnixty/icomplete-recentf ()
     (interactive)
-    (icomplete-vertical-do (:height (/ (window-height) 4))
-      (let ((files (mapcar 'abbreviate-file-name recentf-list)))
-        (find-file
-         (completing-read "Open recentf entry: " files nil t)))))
+    (let ((files (mapcar 'abbreviate-file-name recentf-list)))
+      (find-file
+       (completing-read "Open recentf entry: " files nil t))))
   ;; Make sure that XF86 keys work in exwm buffers as well
   (dolist (k '(XF86AudioLowerVolume
                XF86AudioRaiseVolume
