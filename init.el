@@ -207,6 +207,15 @@
     (let ((files (mapcar 'abbreviate-file-name recentf-list)))
       (find-file
        (completing-read "Open recentf entry: " files nil t))))
+  (defun dnixty/eshell-multi ()
+    (interactive)
+    (let* ((parent (if (buffer-file-name)
+                       (file-name-directory (buffer-file-name))
+                     default-directory))
+           (name (car (last (split-string parent "/" t)))))
+      (with-current-buffer (eshell)
+        (rename-buffer
+         (generate-new-buffer-name (concat "*eshell: " name "*"))))))
   ;; Make sure that XF86 keys work in exwm buffers as well
   (dolist (k '(XF86AudioLowerVolume
                XF86AudioRaiseVolume
@@ -246,6 +255,7 @@
   (exwm-input-set-key (kbd "s-<right>") #'winner-redo)
   (exwm-input-set-key (kbd "s-<left>") #'winner-undo)
   (exwm-input-set-key (kbd "s-<return>") #'eshell)
+  (exwm-input-set-key (kbd "s-S-<return>") #'dnixty/eshell-multi)
   (exwm-input-set-key (kbd "s-<tab>") #'dnixty/switch-to-other)
   (exwm-input-set-key (kbd "C-s-b") #'windmove-left)
   (exwm-input-set-key (kbd "C-s-n") #'windmove-down)
