@@ -134,13 +134,13 @@
            (side . top)
            (slot . 0)
            (window-parameters . ((no-other-window . t))))
-          ("\\*\\(Backtrace\\|Warnings\\|Compile-Log\\|Messages\\)\\*"
+          ("\\*\\(Backtrace\\|Warnings\\|Compile-Log\\|Messages\\|breakpoints of.*\\)\\*"
            (display-buffer-in-side-window)
            (window-height . 0.16)
            (side . top)
            (slot . 1)
            (window-parameters . ((no-other-window . t))))
-          ("\\*\\(Output\\|Register Preview\\).*"
+          ("\\*\\(Output\\|Register Preview\\|input/output of\\).*"
            (display-buffer-in-side-window)
            (window-width . 0.16)       ; See the :hook
            (side . bottom)
@@ -152,17 +152,22 @@
            (side . bottom)
            (slot . 0)
            (window-parameters . ((no-other-window . t))))
-          ("^\\(\\*e?shell\\|vterm\\).*"
+          ("^\\(\\*e?shell\\|\\*gud\\).*"
            (display-buffer-in-side-window)
            (window-height . 0.16)
            (side . bottom)
            (slot . 1))
-          ("\\*Help.*"
+          ("\\*\\(Help\\|slime-description\\).*"
            (display-buffer-in-side-window)
            (window-width . 0.20)       ; See the :hook
            (side . left)
            (slot . 0)
            (window-parameters . ((no-other-window . t))))
+          ("\\*rg\\*"
+           (display-buffer-in-side-window)
+           (window-width . 0.25)
+           (side . right)
+           (slot . 0))
           ("\\*\\vc-\\(incoming\\|outgoing\\).*"
            (display-buffer-at-bottom))))
   (setq window-combination-resize t)
