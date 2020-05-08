@@ -932,9 +932,10 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :commands slime
   :config
   (setq inferior-lisp-program "sbcl")
+  (setq slime-selector-other-window nil)
   (setq slime-lisp-implementations
         '((sbcl ("sbcl" "--noinform"))
-          (clisp ("clisp"))))
+          (clisp ("clisp" "--quiet"))))
   (slime-setup '(slime-fancy)))
 
 ;; Password Store
