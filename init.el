@@ -50,12 +50,12 @@
     "Font for the small laptop screen."
     (interactive)
     (when window-system
-      (set-frame-font "Hack-11:hintstyle=hintslight" t t)))
+      (set-face-attribute 'default nil :family "Hack" :height 110)))
   (defun dnixty/desktop-font ()
     "Font for the larger desktop screen."
     (interactive)
     (when window-system
-      (set-frame-font "Hack-14:hintstyle=hintslight" t t)))
+      (set-face-attribute 'default nil :family "Hack" :height 140)))
   (defun dnixty/set-font ()
     (when window-system
       (if (<= (display-pixel-width) 1366)
@@ -121,6 +121,7 @@
   (setq recentf-show-file-shortcuts-flag nil)
   :hook (after-init-hook . recentf-mode))
 
+
 ;;; --------------------------------------------------------------------
 ;;; 3. Window manager
 ;;; --------------------------------------------------------------------
