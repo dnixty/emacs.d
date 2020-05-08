@@ -969,10 +969,21 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq dired-listing-switches
         "-AGFhlv --group-directories-first --time-style=long-iso")
   (setq dired-dwim-target t)
+  :bind (:map dired-mode-map
+              ("C-l" . dired-up-directory)
+              ("C-+" . dired-create-empty-file))
   :hook ((dired-mode-hook . dired-hide-details-mode)
          (dired-mode-hook . hl-line-mode)
          (dired-mode-hook . auto-revert-mode)))
 (use-package dired-x
   :after dired)
+(use-package dired-subtree
+  :after dired
+  :config
+  (setq dired-subtree-use-backgrounds nil)
+  :bind (:map dired-mode-map
+              ("<tab>" . dired-subtree-toggle)
+              ("<C-tab>" . dired-subtree-cycle)
+              ("<S-iso-lefttab>" . dired-subtree-remove)))
 
 ;;; init.el ends here
