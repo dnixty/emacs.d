@@ -263,6 +263,8 @@
   (exwm-input-set-key (kbd "s-<return>") #'eshell)
   (exwm-input-set-key (kbd "s-S-<return>") #'dnixty/eshell-multi)
   (exwm-input-set-key (kbd "s-<tab>") #'dnixty/switch-to-other)
+  (exwm-input-set-key (kbd "s-<prior>") #'previous-buffer)
+  (exwm-input-set-key (kbd "s-<next>") #'next-buffer)
   (exwm-input-set-key (kbd "C-s-b") #'windmove-left)
   (exwm-input-set-key (kbd "C-s-n") #'windmove-down)
   (exwm-input-set-key (kbd "C-s-p") #'windmove-up)
