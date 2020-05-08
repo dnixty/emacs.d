@@ -866,22 +866,56 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :hook (after-init-hook . pinentry-start))
 
 ;; Eshell
-(use-package eshell
+(use-package em-term
   :config
-  (setq eshell-history-size 1024)
-  (setq eshell-hist-ignoredups t)
   (setq eshell-destroy-buffer-when-process-dies t))
-(use-package esh-module
-  :after eshell
+(use-package esh-mode
+  :after em-hist
   :config
-  (delq 'eshell-banner eshell-modules-list))
+  (defun dnixty/eshell-file-parent-dir ()
+    "Open `dired' with the parent directory of file at point."
+    (interactive)
+    (let ((file (ffap-file-at-point)))
+      (dired (file-name-directory file))))
+  :bind :map eshell-mode-map
+  ("M-k" . eshell-kill-input)
+  ("C-c C-j" . dnixty/eshell-file-parent-dir)
+  ("C-c C-l" . eshell/clear-scrollback))
+(use-package esh-module
+  :config
+  (delq 'eshell-banner eshell-modules-list)
+  (push 'eshell-tramp eshell-modules-list))
 (use-package esh-autosuggest
-  :after eshell
   :config
   (setq esh-autosuggest-delay 0.5)
   :bind (:map esh-autosuggest-active-map
               ("<tab>" . company-complete-selection))
   :hook (eshell-mode-hook . esh-autosuggest-mode))
+(use-package em-tramp
+  :config
+  (setq password-cache t)
+  (setq password-cache-expiry 3600))
+(use-package em-hist
+  :config
+  (setq eshell-history-size 1024)
+  (setq eshell-hist-ignoredups t)
+  (defun dnixty/eshell-complete-history ()
+    (interactive)
+    (let ((hist (ring-elements eshell-history-ring)))
+      (insert
+       (completing-read "Input history: " hist nil t))))
+  (defun dnixty/eshell-complete-recent-dir (&optional arg)
+    (interactive "P")
+    (let* ((dirs (ring-elements eshell-last-dir-ring))
+           (dir (icomplete-vertical-do ()
+                  (completing-read "Switch to recent dir: " dirs nil t))))
+      (insert dir)
+      (eshell-send-input)
+      (when arg
+        (dired dir))))
+  :bind (:map eshell-hist-mode-map
+              ("M-r" . dnixty/eshell-complete-history)
+              ("C-c d" . dnixty/eshell-complete-recent-dir)))
 
 ;; Ledger
 (use-package ledger-mode
