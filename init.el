@@ -947,15 +947,14 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (defun dnixty/eshell-complete-recent-dir (&optional arg)
     (interactive "P")
     (let* ((dirs (ring-elements eshell-last-dir-ring))
-           (dir (icomplete-vertical-do ()
-                  (completing-read "Switch to recent dir: " dirs nil t))))
+           (dir (completing-read "Switch to recent dir: " dirs nil t)))
       (insert dir)
       (eshell-send-input)
       (when arg
         (dired dir))))
   :bind (:map eshell-hist-mode-map
               ("M-r" . dnixty/eshell-complete-history)
-              ("C-c d" . dnixty/eshell-complete-recent-dir)))
+              ("C-c =" . dnixty/eshell-complete-recent-dir)))
 
 ;; Ledger
 (use-package ledger-mode
