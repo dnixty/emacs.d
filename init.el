@@ -868,6 +868,18 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :diminish
   :hook (prog-mode-hook . subword-mode))
 
+;; Slime
+(use-package slime
+  :pin manual
+  :commands slime
+  :config
+  (setq inferior-lisp-program "sbcl")
+  (setq slime-selector-other-window nil)
+  (setq slime-lisp-implementations
+        '((sbcl ("sbcl" "--noinform"))
+          (clisp ("clisp" "--quiet"))))
+  (slime-setup '(slime-fancy slime-quicklisp)))
+
 
 ;;; --------------------------------------------------------------------
 ;;; 7. Applicatons and utilities
@@ -953,18 +965,6 @@ This function is meant to be mapped to a key in `rg-mode-map'."
 
 ;; Magit
 (use-package magit)
-
-;; Slime
-(use-package slime
-  :pin manual
-  :commands slime
-  :config
-  (setq inferior-lisp-program "sbcl")
-  (setq slime-selector-other-window nil)
-  (setq slime-lisp-implementations
-        '((sbcl ("sbcl" "--noinform"))
-          (clisp ("clisp" "--quiet"))))
-  (slime-setup '(slime-fancy)))
 
 ;; Password Store
 (use-package password-store
