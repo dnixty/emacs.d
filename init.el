@@ -415,7 +415,7 @@ parameters."
   (setq completion-ignore-case t)
   (setq read-buffer-completion-ignore-case t)
   (setq read-file-name-completion-ignore-case t)
-  (setq completions-format 'vertical)
+  (setq completions-format 'horizontal)
   (setq enable-recursive-minibuffers t)
   (setq read-answer-short t)
   (setq resize-mini-windows t)
