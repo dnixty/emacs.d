@@ -71,8 +71,7 @@
 ;; Record cursor position
 (use-package saveplace
   :config
-  (save-place-mode)
-  :hook (before-save-hook save-place-kill-emacs))
+  (save-place-mode))
 
 ;; Backups
 (use-package emacs
