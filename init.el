@@ -910,17 +910,9 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :config
   (setq eshell-destroy-buffer-when-process-dies t))
 (use-package esh-mode
-  :after em-hist
   :config
-  (defun dnixty/eshell-file-parent-dir ()
-    "Open `dired' with the parent directory of file at point."
-    (interactive)
-    (let ((file (ffap-file-at-point)))
-      (dired (file-name-directory file))))
-  :bind :map eshell-mode-map
-  ("M-k" . eshell-kill-input)
-  ("C-c C-j" . dnixty/eshell-file-parent-dir)
-  ("C-c C-l" . eshell/clear-scrollback))
+  :bind (:map eshell-mode-map
+              ("M-k" . eshell-kill-input)))
 (use-package esh-module
   :config
   (delq 'eshell-banner eshell-modules-list)
