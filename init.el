@@ -271,6 +271,8 @@ parameters."
   (exwm-input-set-key (kbd "s-h") #'dnixty/describe-symbol-at-point)
   (exwm-input-set-key (kbd "s-H") #'dnixty/describe-symbol-at-point-switch)
   (exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
+  (exwm-input-set-key (kbd "s-j") #'dired-jump)
+  (exwm-input-set-key (kbd "s-J") #'dired-jump-other-window)
   (exwm-input-set-key (kbd "s-k") #'kill-this-buffer)
   (exwm-input-set-key (kbd "s-o") #'other-window)
   (exwm-input-set-key (kbd "s-O") #'exwm-layout-toggle-fullscreen)
@@ -1015,17 +1017,67 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :config
   (setq dired-recursive-copies 'always)
   (setq dired-recursive-deletes 'always)
+  (setq delete-by-moving-to-trash t)
   (setq dired-listing-switches
         "-AGFhlv --group-directories-first --time-style=long-iso")
   (setq dired-dwim-target t)
   :bind (:map dired-mode-map
-              ("C-l" . dired-up-directory)
-              ("C-+" . dired-create-empty-file))
+              ("C-l" . dired-up-directory))
   :hook ((dired-mode-hook . dired-hide-details-mode)
-         (dired-mode-hook . hl-line-mode)
-         (dired-mode-hook . auto-revert-mode)))
-(use-package dired-x
-  :after dired)
+         (dired-mode-hook . hl-line-mode)))
+(use-package dired-aux
+  :config
+  (setq dired-isearch-filenames 'dwim)
+  (setq dired-create-destination-dirs 'ask)
+  (setq dired-vc-rename-file t)
+  (defun contrib/cdb--bookmarked-directories ()
+    (bookmark-maybe-load-default-file)
+    (cl-loop for (name . props) in bookmark-alist
+             for fn = (cdr (assq 'filename props))
+             when (and fn (string-suffix-p "/" fn))
+             collect (cons name fn)))
+  (defun contrib/cd-bookmark (bm)
+    "Insert the path of a bookmarked directory."
+    (interactive
+     (list (let ((enable-recursive-minibuffers t))
+             (completing-read
+              "Directory: " (contrib/cdb--bookmarked-directories) nil t))))
+    (when (minibufferp)
+      (delete-region (minibuffer-prompt-end) (point-max)))
+    (insert (cdr (assoc bm (contrib/cdb--bookmarked-directories)))))
+  :bind (:map dired-mode-map
+             ("C-+" . dired-create-empty-file)
+             :map minibuffer-local-filename-completion-map
+             ("C-c d" . contrib/cd-bookmark)))
+(use-package find-dired
+  :after dired
+  :config
+  (setq find-ls-option
+        '("-ls" . "-AGFhlv --group-directories-first --time-style=long-iso"))
+  (setq find-name-arg "-iname"))
+(use-package async)
+(use-package dired-async
+  :after (dired async)
+  :hook (dired-mode-hook . dired-async-mode))
+(use-package wdired
+  :after dired
+  :commands wdired-change-to-wdired-mode
+  :config
+  (setq wdired-allow-to-change-permissions t))
+(use-package peep-dired
+  :after dired
+  :config
+  (setq peep-dired-enable-on-directories nil)
+  :bind (:map dired-mode-map
+              ("P" . peep-dired)))
+(use-package image-dired
+  :config
+  (setq image-dired-external-viewer "sxiv")
+  (setq image-dired-thumb-size 80)
+  (setq image-dired-thumb-relief 0)
+  (setq image-dired-thumbs-per-row 4)
+  :bind (:map image-dired-thumbnail-mode-map
+              ("<return>" . image-dired-thumbnail-display-external)))
 (use-package dired-subtree
   :after dired
   :config
@@ -1034,5 +1086,25 @@ This function is meant to be mapped to a key in `rg-mode-map'."
               ("<tab>" . dired-subtree-toggle)
               ("<C-tab>" . dired-subtree-cycle)
               ("<S-iso-lefttab>" . dired-subtree-remove)))
+(use-package dired-x
+  :after dired
+  :config
+  (setq dired-bind-man nil)
+  (setq dired-bind-info nil))
+(use-package diredfl
+  :hook (dired-mode-hook . diredfl-mode))
+(use-package trashed
+  :config
+  (setq trashed-action-confirmer 'y-or-n-p)
+  (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
+
+
+;; Proced
+(use-package proced
+  :commands proced
+  :config
+  (setq-default proced-auto-update-flag t)
+  (setq proced-auto-update-interval 1))
+
 
 ;;; init.el ends here
