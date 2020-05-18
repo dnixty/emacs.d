@@ -229,10 +229,10 @@ parameters."
     (interactive)
     (dnixty/describe-symbol-at-point)
     (let ((help (get-buffer-window "*Help*")))
-        (when help
-          (if (not (eq (selected-window) help))
-              (select-window help)
-            (select-window (get-mru-window))))))
+      (when help
+        (if (not (eq (selected-window) help))
+            (select-window help)
+          (select-window (get-mru-window))))))
   (defun dnixty/recentf ()
     (interactive)
     (let ((files (mapcar 'abbreviate-file-name recentf-list)))
@@ -398,12 +398,12 @@ parameters."
 ;;; --------------------------------------------------------------------
 
 (use-package orderless
-    :config
-    (setq orderless-matching-styles
-          '(orderless-regexp
-            orderless-flex))
-    :bind (:map minibuffer-local-completion-map
-                ("SPC" . nil)))
+  :config
+  (setq orderless-matching-styles
+        '(orderless-regexp
+          orderless-flex))
+  :bind (:map minibuffer-local-completion-map
+              ("SPC" . nil)))
 
 (use-package minibuffer
   :after orderless
