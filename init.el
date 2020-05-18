@@ -715,18 +715,16 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (defun dnixty/modus-operandi ()
     "Enable some Modus Operandi variables and load the theme."
     (setq custom-enabled-themes '(modus-operandi))
-    (setq modus-operandi-theme-slanted-constructs t)
-    (setq modus-operandi-theme-bold-constructs nil)
-    (setq modus-operandi-theme-scale-headings nil)
+    (setq modus-operandi-theme-visible-fringes t)
     (setq modus-operandi-theme-proportional-fonts t)
+    (setq modus-operandi-theme-rainbow-headings t)
     (dnixty/reapply-themes))
   (defun dnixty/modus-vivendi ()
     "Enable some Modus Vivendi variables and load the theme."
     (setq custom-enabled-themes '(modus-vivendi))
-    (setq modus-vivendi-theme-slanted-constructs t)
-    (setq modus-vivendi-theme-bold-constructs nil)
-    (setq modus-vivendi-theme-scale-headings nil)
+    (setq modus-vivendi-theme-visible-fringes t)
     (setq modus-vivendi-theme-proportional-fonts t)
+    (setq modus-vivendi-theme-rainbow-headings t)
     (dnixty/reapply-themes))
   (defun dnixty/theme-toggle ()
     "Toggle between sanityinc-tomorrow themes."
@@ -734,7 +732,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
     (if (eq (car custom-enabled-themes) 'modus-operandi)
         (dnixty/modus-vivendi)
       (dnixty/modus-operandi)))
-  :hook (after-init-hook . dnixty/reapply-themes)
+  :hook (after-init-hook . dnixty/modus-operandi)
   :bind ([f5] . dnixty/theme-toggle))
 
 ;; Initial scratch message
@@ -861,6 +859,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq split-width-threshold 130)
   :bind (("C-x k" . kill-this-buffer)
          ("M-i" . imenu)))
+
 
 
 ;;; --------------------------------------------------------------------
