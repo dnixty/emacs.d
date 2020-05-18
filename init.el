@@ -885,6 +885,31 @@ This function is meant to be mapped to a key in `rg-mode-map'."
           (clisp ("clisp" "--quiet"))))
   (slime-setup '(slime-fancy slime-quicklisp)))
 
+;; Flycheck
+(use-package flycheck
+  :config
+  (setq flycheck-check-syntax-automatically '(save mode-enabled)))
+
+;; Js
+(use-package js
+  :config
+  (setq js-indent-level 2))
+
+;; Tide
+(use-package tide
+  :mode ("\\.tsx?\\'" . typescript-mode)
+  ;; :after (typescript-mode flycheck)
+  :config
+  (setq typescript-indent-level 2)
+  :hook ((typescript-mode-hook . tide-setup)
+         (typescript-mode-hook . flycheck-mode)
+         (typescript-mode-hook . tide-hl-identifier-mode)))
+
+;; Prettier
+(use-package prettier-js
+  :hook ((js-mode-hook . prettier-js-mode)
+         (typescript-mode-hook . prettier-js-mode)))
+
 
 ;;; --------------------------------------------------------------------
 ;;; 7. Applicatons and utilities
