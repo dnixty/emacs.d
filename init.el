@@ -995,6 +995,23 @@ This function is meant to be mapped to a key in `rg-mode-map'."
 (use-package magit
   :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
          (magit-post-refresh-hook . diff-hl-magit-post-refresh )))
+(use-package git-commit
+  :after magit
+  :config
+  (setq git-commit-summary-max-length 50)
+  (setq git-commit-style-convention-checks
+        '(non-empty-second-line
+          overlong-summary-line)))
+(use-package magit-diff
+  :after magit
+  :config
+  (setq magit-diff-refine-hunk t))
+(use-package magit-repos
+  :after magit
+  :commands magit-list-repositories
+  :config
+  (setq magit-repository-directories
+        '(("~/src" . 1))))
 
 ;; Password Store
 (use-package password-store
@@ -1104,7 +1121,6 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :config
   (setq trashed-action-confirmer 'y-or-n-p)
   (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
-
 
 ;; Proced
 (use-package proced
