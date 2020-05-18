@@ -911,6 +911,12 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :hook ((js-mode-hook . prettier-js-mode)
          (typescript-mode-hook . prettier-js-mode)))
 
+;; Diff-hl
+(use-package diff-hl
+  :config
+  (setq diff-hl-draw-borders nil)
+  :hook (after-init-hook . global-diff-hl-mode))
+
 
 ;;; --------------------------------------------------------------------
 ;;; 7. Applicatons and utilities
@@ -986,7 +992,9 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :init)
 
 ;; Magit
-(use-package magit)
+(use-package magit
+  :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
+         (magit-post-refresh-hook . diff-hl-magit-post-refresh )))
 
 ;; Password Store
 (use-package password-store
