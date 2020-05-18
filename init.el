@@ -117,7 +117,7 @@
 (use-package recentf
   :config
   (setq recentf-max-saved-items 200)
-  (setq recentf-show-file-shortcuts-flag nil)
+  (setq recentf-exclude '(".gz" ".xz" ".zip" "/elpa/" "/ssh:" "/sudo:"))
   :hook (after-init-hook . recentf-mode))
 
 
@@ -233,7 +233,7 @@ parameters."
           (if (not (eq (selected-window) help))
               (select-window help)
             (select-window (get-mru-window))))))
-  (defun dnixty/icomplete-recentf ()
+  (defun dnixty/recentf ()
     (interactive)
     (let ((files (mapcar 'abbreviate-file-name recentf-list)))
       (find-file
@@ -277,7 +277,7 @@ parameters."
   (exwm-input-set-key (kbd "s-p") #'password-store-copy)
   (exwm-input-set-key (kbd "s-P") #'password-store-otp-token-copy)
   (exwm-input-set-key (kbd "s-q") #'window-toggle-side-windows)
-  (exwm-input-set-key (kbd "s-r") #'dnixty/icomplete-recentf)
+  (exwm-input-set-key (kbd "s-r") #'dnixty/recentf)
   (exwm-input-set-key (kbd "s-R") #'exwm-reset)
   (exwm-input-set-key (kbd "s-v") #'magit-status)
   (exwm-input-set-key (kbd "s-X") #'exwm-input-toggle-keyboard)
