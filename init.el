@@ -397,17 +397,19 @@ parameters."
 ;;; 4. Selection narrowing and search
 ;;; --------------------------------------------------------------------
 
-(use-package minibuffer
-  :config
-  (use-package orderless
+(use-package orderless
     :config
-    (setq orderless-component-matching-styles
+    (setq orderless-matching-styles
           '(orderless-regexp
             orderless-flex))
     :bind (:map minibuffer-local-completion-map
                 ("SPC" . nil)))
+
+(use-package minibuffer
+  :after orderless
+  :config
   (setq completion-styles
-        '(basic partial-completion initials orderless))
+        '(basic partial-completion orderless))
   (setq completion-category-defaults nil)
   (setq completion-cycle-threshold 3)
   (setq completion-pcm-complete-word-inserts-delimiters t)
@@ -429,7 +431,10 @@ parameters."
       (when mini
         (select-window mini))))
 
-  :bind (:map completion-list-mode-map
+  :bind (:map minibuffer-local-completion-map
+              ("<return>" . minibuffer-force-complete-and-exit)
+              ("C-j" . exit-minibuffer)
+              :map completion-list-mode-map
               ("n" . next-line)
               ("p" . previous-line)
               ("f" . next-completion)
