@@ -218,6 +218,9 @@ parameters."
   (defun dnixty/suspend-to-sleep ()
     (interactive)
     (call-process "loginctl" nil nil nil "lock-session"))
+  (defun dnixty/reconnect-headphones ()
+    (interactive)
+    (start-process "" nil "bluetoothctl" "connect" "28:11:A5:DF:19:9F"))
   (defun dnixty/switch-to-other ()
     (interactive)
     (switch-to-buffer (other-buffer (current-buffer) 1)))
@@ -248,10 +251,12 @@ parameters."
       (with-current-buffer (eshell)
         (rename-buffer
          (generate-new-buffer-name (concat "*eshell: " name "*"))))))
+
   ;; Make sure that XF86 keys work in exwm buffers as well
   (dolist (k '(XF86AudioLowerVolume
                XF86AudioRaiseVolume
                XF86AudioMute
+               XF86Launch1
                print
                f5))
     (cl-pushnew k exwm-input-prefix-keys))
@@ -298,6 +303,7 @@ parameters."
   (exwm-input-set-key (kbd "C-s-p") #'windmove-up)
   (exwm-input-set-key (kbd "C-s-f") #'windmove-right)
   (exwm-input-set-key (kbd "<print>") #'dnixty/capture-screen)
+  (exwm-input-set-key (kbd "<XF86Launch1>") #'dnixty/reconnect-headphones)
   ;; Simulation keys
   (exwm-input-set-simulation-keys
    '(([?\C-b] . left)
