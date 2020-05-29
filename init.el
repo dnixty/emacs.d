@@ -1099,17 +1099,8 @@ This function is meant to be mapped to a key in `rg-mode-map'."
     (let ((hist (ring-elements eshell-history-ring)))
       (insert
        (completing-read "Input history: " hist nil t))))
-  (defun dnixty/eshell-complete-recent-dir (&optional arg)
-    (interactive "P")
-    (let* ((dirs (ring-elements eshell-last-dir-ring))
-           (dir (completing-read "Switch to recent dir: " dirs nil t)))
-      (insert dir)
-      (eshell-send-input)
-      (when arg
-        (dired dir))))
   :bind (:map eshell-hist-mode-map
-              ("M-r" . dnixty/eshell-complete-history)
-              ("C-c =" . dnixty/eshell-complete-recent-dir)))
+              ("M-r" . dnixty/eshell-complete-history)))
 
 ;; Ledger
 (use-package ledger-mode
@@ -1118,9 +1109,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :init)
 
 ;; Magit
-(use-package magit
-  :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
-         (magit-post-refresh-hook . diff-hl-magit-post-refresh )))
+(use-package magit)
 (use-package git-commit
   :after magit
   :config
