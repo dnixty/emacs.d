@@ -157,7 +157,7 @@
            (window-height . 0.16)
            (side . bottom)
            (slot . 1))
-          ("\\*\\(Help\\|slime-description\\).*"
+          ("\\*\\(Help\\|sly-description\\).*"
            (display-buffer-in-side-window)
            (window-width . 0.20)       ; See the :hook
            (side . left)
@@ -172,7 +172,8 @@
            (display-buffer-at-bottom))))
   (setq window-combination-resize t)
   (setq even-window-sizes 'height-only)
-  :hook (help-mode-hook . visual-line-mode)
+  :hook ((help-mode-hook . visual-line-mode)
+         (sly-popup-buffer-mode-hook . visual-line-mode))
   :bind ("C-x +" . balance-windows-area))
 
 (use-package emacs
@@ -802,13 +803,9 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq show-paren-when-point-inside-paren t)
   (setq show-paren-delay 0)
   :hook (after-init-hook . show-paren-mode))
-(use-package slime
+(use-package sly
   :config
-  (defun dnixty/override-slime-repl-bindings-with-paredit ()
-    (define-key slime-repl-mode-map
-      (read-kbd-macro paredit-backward-delete-key) nil))
-  :hook ((slime-repl-mode-hook . dnixty/override-slime-repl-bindings-with-paredit)
-         (slime-repl-mode-hook . (lambda () (paredit-mode +1)))))
+  :hook (sly-mrepl-hook . (lambda () (paredit-mode +1))))
 
 ;; Newline characters for file ending
 (use-package emacs
@@ -874,17 +871,17 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :diminish
   :hook (prog-mode-hook . subword-mode))
 
-;; Slime
-(use-package slime
-  :pin manual
-  :commands slime
+;; Sly
+(use-package sly
+  :commands sly
   :config
   (setq inferior-lisp-program "sbcl")
-  (setq slime-selector-other-window nil)
-  (setq slime-lisp-implementations
-        '((sbcl ("sbcl" "--noinform"))
-          (clisp ("clisp" "--quiet"))))
-  (slime-setup '(slime-fancy slime-quicklisp)))
+  (setq sly-lisp-implementations
+        `((sbcl ("sbcl" "--noinform"))
+          (clisp ("clisp" "--quiet")))))
+(use-package sly-mrepl
+  :config
+  (setq sly-mrepl-history-file-name (expand-file-name "sly-mrepl-history" user-emacs-directory)))
 
 ;; Flycheck
 (use-package flycheck
