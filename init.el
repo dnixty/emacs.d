@@ -1065,7 +1065,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
 ;; Encryption
 (use-package pinentry
   :config
-  (setq-default epa-pinentry-mode 'loopback)
+  (setq-default epg-pinentry-mode 'loopback)
   :hook (after-init-hook . pinentry-start))
 
 ;; Eshell
