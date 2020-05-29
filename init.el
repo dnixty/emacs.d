@@ -280,6 +280,7 @@ parameters."
   (exwm-input-set-key (kbd "s-j") #'dired-jump)
   (exwm-input-set-key (kbd "s-J") #'dired-jump-other-window)
   (exwm-input-set-key (kbd "s-k") #'kill-this-buffer)
+  (exwm-input-set-key (kbd "s-m") #'gnus)
   (exwm-input-set-key (kbd "s-o") #'other-window)
   (exwm-input-set-key (kbd "s-O") #'exwm-layout-toggle-fullscreen)
   (exwm-input-set-key (kbd "s-p") #'password-store-copy)
@@ -934,10 +935,132 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq calendar-longitude -0.076132)
   :hook (calendar-today-visible-hook . calendar-mark-today))
 
-;; Org
-(use-package org
+;; Gnus
+(use-package auth-source
   :config
-  (setq org-hide-leading-stars t))
+  (setq user-full-name "Dominik Stodolny")
+  (setq user-mail-address "dominik@stodolny.org"))
+(use-package message
+  :config
+  (setq mail-user-agent 'gnus-user-agent)
+  (setq compose-mail-user-agent-warnings nil)
+  (setq mail-signature "Dominik Stodolny\n")
+  (setq message-signature "Dominik Stodolny\n")
+  (setq message-citation-line-format "%f [%Y-%m-%d, %R %z]:\n")
+  (setq message-citation-line-function
+        'message-insert-formatted-citation-line)
+  (setq message-kill-buffer-on-exit t)
+  (setq message-wide-reply-confirm-recipients t)
+  :hook (message-setup-hook . message-sort-headers))
+(use-package gnus
+  :config
+  (setq gnus-select-method '(nnnil ""))
+  (setq gnus-secondary-select-methods
+        '((nntp "news.gwene.org")
+          (nnimap "main"
+                  (nnimap-address "mail.gandi.net")
+                  (nnimap-server-port 993)
+                  (nnimap-stream ssl))))
+  (setq gnus-message-archive-group "nnimap+main:Sent")
+  (setq gnus-gcc-mark-as-read t)
+  (setq gnus-always-read-dribble-file t)
+  (setq gnus-novice-user nil))
+(use-package nnmail
+  :config
+  (setq nnmail-expiry-wait 30))
+(use-package gnus-agent
+  :after gnus
+  :config
+  (setq gnus-agent-expire-days 30))
+(use-package gnus-async
+  :after gnus
+  :config
+  (setq gnus-asynchronous t)
+  (setq gnus-use-article-prefetch 15))
+(use-package gnus-group
+  :after gnus
+  :demand
+  :config
+  (setq gnus-list-groups-with-ticked-articles nil)
+  (setq gnus-group-sort-function
+        '((gnus-group-sort-by-unread)
+          (gnus-group-sort-by-alphabet)
+          (gnus-group-sort-by-rank)))
+  (setq gnus-group-mode-line-format "%%b")
+  :hook ((gnus-group-mode-hook . hl-line-mode)
+         (gnus-select-group-hook . gnus-group-set-timestamp))
+  :bind (:map gnus-agent-group-mode-map
+              ("M-n" . gnus-topic-goto-next-topic)
+              ("M-p" . gnus-topic-goto-previous-topic)))
+(use-package gnus-topic
+  :after (gnus gnus-group)
+  :config
+  (setq gnus-topic-display-empty-topics nil)
+  :hook (gnus-group-mode-hook . gnus-topic-mode))
+(use-package gnus-sum
+  :after (gnus gnus-group)
+  :demand
+  :config
+  (setq gnus-auto-select-first nil)
+  (setq gnus-summary-ignore-duplicates t)
+  (setq gnus-suppress-duplicates t)
+  (setq gnus-thread-sort-functions
+        '((not gnus-thread-sort-by-date)
+          (not gnus-thread-sort-by-number)))
+  (setq gnus-subthread-sort-functions
+        'gnus-thread-sort-by-date)
+  (setq gnus-user-date-format-alist
+        '(((gnus-seconds-today) . "Today at %R")
+          ((+ 86400 (gnus-seconds-today)) . "Yesterday, %R")
+          (t . "%Y-%m-%d %R")))
+
+  (setq gnus-ignored-from-addresses "Dominik Stodolny")
+  (setq gnus-summary-to-prefix "To: ")
+
+  (setq gnus-summary-line-format "%U%R%z %-16,16&user-date;  %4L:%-30,30f  %B%s\n")
+  (setq gnus-summary-mode-line-format "%p")
+  (setq gnus-sum-thread-tree-false-root "─┬> ")
+  (setq gnus-sum-thread-tree-indent " ")
+  (setq gnus-sum-thread-tree-leaf-with-other "├─> ")
+  (setq gnus-sum-thread-tree-root "")
+  (setq gnus-sum-thread-tree-single-leaf "└─> ")
+  (setq gnus-sum-thread-tree-vertical "│")
+  :hook (gnus-summary-mode-hook . hl-line-mode)
+  :bind (:map gnus-agent-summary-mode-map
+              ("<delete>" . gnus-summary-delete-article)
+              ("n" . gnus-summary-next-article)
+              ("p" . gnus-summary-prev-article)
+              ("N" . gnus-summary-next-unread-article)
+              ("P" . gnus-summary-prev-unread-article)
+              ("M-n" . gnus-summary-next-thread)
+              ("M-p" . gnus-summary-prev-thread)
+              ("C-M-n" . gnus-summary-next-group)
+              ("C-M-p" . gnus-summary-prev-group)
+              ("C-M-^" . gnus-summary-refer-thread)))
+(use-package gnus-srvr
+  :after gnus
+  :hook ((gnus-browse-mode-hook gnus-server-mode-hook) . hl-line-mode))
+(use-package gnus-win
+  :config
+  (setq gnus-use-full-window nil))
+(use-package gnus-dired
+  :after (gnus dired)
+  :hook (dired-mode-hook . gnus-dired-mode))
+(use-package smtpmail
+  :init
+  (setq smtpmail-default-smtp-server "mail.gandi.net")
+  :config
+  (setq smtpmail-smtp-server "mail.gandi.net")
+  (setq smtpmail-stream-type 'ssl)
+  (setq smtpmail-smtp-service 465))
+(use-package smtpmail-async
+  :after smtpmail
+  :config
+  (setq send-mail-function 'async-smtpmail-send-it)
+  (setq message-send-mail-function 'async-smtpmail-send-it))
+
+;; Org
+(use-package org)
 
 ;; Encryption
 (use-package pinentry
