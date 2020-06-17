@@ -251,7 +251,6 @@ parameters."
       (with-current-buffer (eshell)
         (rename-buffer
          (generate-new-buffer-name (concat "*eshell: " name "*"))))))
-
   ;; Make sure that XF86 keys work in exwm buffers as well
   (dolist (k '(XF86AudioLowerVolume
                XF86AudioRaiseVolume
@@ -959,8 +958,12 @@ This function is meant to be mapped to a key in `rg-mode-map'."
         '((nntp "news.gwene.org")
           (nnimap "main"
                   (nnimap-address "mail.gandi.net")
-                  (nnimap-server-port 993)
-                  (nnimap-stream ssl))))
+                  (nnimap-stream ssl)
+                  (nnimap-authinfo-file "~/.authinfo.gpg"))
+          (nnimap "dmk"
+                  (nnimap-address "mail.gandi.net")
+                  (nnimap-stream ssl)
+                  (nnimap-authinfo-file "~/.authinfo.gpg"))))
   (setq gnus-message-archive-group "nnimap+main:Sent")
   (setq gnus-gcc-mark-as-read t)
   (setq gnus-always-read-dribble-file t)
