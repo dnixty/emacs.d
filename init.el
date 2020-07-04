@@ -181,32 +181,6 @@
          (sly-popup-buffer-mode-hook . visual-line-mode))
   :bind ("C-x +" . balance-windows-area))
 
-(use-package emacs
-  :commands (dnixty/window-dired-vc-root-left)
-  :config
-  (defun dnixty/window-dired-vc-root-left-toggle ()
-    "Toggle root directory of current version-controlled repository
-or the present working directory with `dired' and bespoke window
-parameters."
-    (interactive)
-    (if (get-buffer "*Dired-Side*")
-        (kill-buffer "*Dired-Side*")
-      (let ((dir (if (eq (vc-root-dir) nil)
-                     (dired-noselect default-directory)
-                   (dired-noselect (vc-root-dir)))))
-        (display-buffer-in-side-window
-         dir `((side . left)
-               (slot . -1)
-               (window-width . 0.16)
-               (window-parameters . ((no-other-window . t)
-                                     (no-delete-other-windows . t)
-                                     (mode-line-format . (" "
-                                                          mode-line-buffer-identification))))))
-        (with-current-buffer dir
-          (rename-buffer "*Dired-Side*")
-          (setq-local window-size-fixed 'width)))))
-  :bind ("<f11>" . dnixty/window-dired-vc-root-left-toggle))
-
 ;; Exwm
 (use-package exwm
   :config
