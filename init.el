@@ -495,45 +495,57 @@
 (use-package project
   :after (minibuffer icomplete icomplete-vertical)
   :config
-  (defun dnixty/project-or-dir-find-subdirectory-recursive ()
-    (interactive)
-    (let* ((project (vc-root-dir))
-           (dir (if project project default-directory))
-           (contents (directory-files-recursively dir ".*" t nil nil))
-           (find-directories (mapcar (lambda (dir)
-                                       (when (file-directory-p dir)
-                                         (abbreviate-file-name dir)))
-                                     contents))
-           (subdirs (delete nil find-directories)))
-      (icomplete-vertical-do (:height (/ (window-height) 4))
-        (dired
-         (completing-read "Find sub-directory: " subdirs nil t dir)))))
+  (defun dnixty/find-file-vc-or-dir (&optional arg)
+    "Find file by name that belongs to the current project or dir.
+With \\[universal-argument] match files by contents.  This
+requires the command-line executable called 'rg' or 'ripgrep'."
+    (interactive "P")
+    (let* ((default-directory (file-name-directory
+                               (or (locate-dominating-file "." ".git" )
+                                   default-directory))))
+      (if arg
+          (let* ((regexp (read-regexp
+                          (concat "File contents matching REGEXP in "
+                                  (propertize default-directory 'face 'bold)
+                                  ": ")))
+                 (results (process-lines "rg" "-l" "--hidden" "-m" "1" "-M" "120" regexp)))
+            (find-file
+             (icomplete-vertical-do ()
+               (completing-read (concat
+                                 "Files with contents matching "
+                                 (propertize regexp 'face 'success)
+                                 (format " (%s)" (length results))
+                                 ": ")
+                                results nil t))))
+        (let* ((filenames-all (directory-files-recursively default-directory ".*" nil t))
+               (filenames (cl-remove-if (lambda (x)
+                                          (string-match-p "\\.git" x))
+                                        filenames-all)))
+          (icomplete-vertical-do ()
+            (find-file
+             (completing-read "Find file recursively: " filenames nil t)))))))
 
-  (defun dnixty/find-file-from-dir-recursive ()
-    (interactive)
-    (let* ((dir default-directory)
-           (files (directory-files-recursively dir ".*" nil t)))
-      (icomplete-vertical-do (:height (/ (window-height) 4))
-        (find-file
-         (completing-read "Find file recursively: " files nil t dir)))))
-
-  (defun dnixty/find-project ()
-    (interactive)
-    (let* ((path "~/src")
+  (defun dnixty/find-project (&optional arg)
+    "Switch to sub-directory at the specified locations.
+With \\[universal-argument] produce a `dired' buffer instead with
+all the possible candidates."
+    (interactive "P")
+    (let* ((dirs (list "~/src"))
            (dotless directory-files-no-dot-files-regexp)
-           (project-list (project-combine-directories
-                          (directory-files path t dotless)))
-           (projects (mapcar 'abbreviate-file-name project-list)))
-      (icomplete-vertical-do (:height (/ (window-height) 4))
-        (dired
-         (completing-read "Find project: " projects nil t path)))))
+           (cands (mapcan (lambda (d)
+                            (directory-files d t dotless))
+                          dirs))
+           (projects (mapcar 'abbreviate-file-name cands))
+           (buf "*Projects Dired*"))
+      (if arg
+          (dired (cons (generate-new-buffer-name buf) projects))
+        (icomplete-vertical-do ()
+          (dired
+           (completing-read "Find project: " projects nil t))))))
 
   :bind (("s-s p" . dnixty/find-project)
-         ("s-s f" . project-find-file)
-         ("s-s z" . dnixty/find-file-from-dir-recursive)
-         ("s-s d" . dnixty/project-or-dir-find-subdirectory-recursive)
-         ("s-s l" . find-library)
-         ("s-s C-M-%" . project-query-replace-regexp)))
+         ("s-s f" . dnixty/find-file-vc-or-dir)
+         ("s-s l" . find-library)))
 
 (use-package emacs
   :after (minibuffer icomplete icomplete-vertical)
