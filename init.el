@@ -904,7 +904,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :config
   (setq js-indent-level 2))
 
-;; Tide
+;; Typescript
 (use-package tide
   :mode ("\\.tsx?\\'" . typescript-mode)
   ;; :after (typescript-mode flycheck)
