@@ -1258,5 +1258,8 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq-default proced-auto-update-flag t)
   (setq proced-auto-update-interval 1))
 
+;; Restclient
+(use-package restclient)
+
 
 ;;; init.el ends here
