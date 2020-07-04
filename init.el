@@ -925,6 +925,12 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq diff-hl-draw-borders nil)
   :hook (after-init-hook . global-diff-hl-mode))
 
+;; C
+(use-package cc-vars
+  :config
+  (setq-default c-default-style "linux")
+  (setq-default c-basic-offset 4))
+
 
 ;;; --------------------------------------------------------------------
 ;;; 7. Applicatons and utilities
