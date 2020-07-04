@@ -120,6 +120,11 @@
   (setq recentf-exclude '(".gz" ".xz" ".zip" "/elpa/" "/ssh:" "/sudo:"))
   :hook (after-init-hook . recentf-mode))
 
+;; Bookmarks
+(use-package bookmark
+  :config
+  (setq bookmark-save-flag 1))
+
 
 ;;; --------------------------------------------------------------------
 ;;; 3. Window manager
