@@ -216,6 +216,9 @@
         (if (not (eq (selected-window) help))
             (select-window help)
           (select-window (get-mru-window))))))
+  (defun dnixty/refresh-display ()
+    (interactive)
+    (dnixty/exwm-change-screen-hook))
   (defun dnixty/recentf ()
     (interactive)
     (let ((files (mapcar 'abbreviate-file-name recentf-list)))
@@ -235,6 +238,7 @@
                XF86AudioRaiseVolume
                XF86AudioMute
                XF86Launch1
+               XF86Display
                print
                f5))
     (cl-pushnew k exwm-input-prefix-keys))
@@ -283,6 +287,7 @@
   (exwm-input-set-key (kbd "C-s-f") #'windmove-right)
   (exwm-input-set-key (kbd "<print>") #'dnixty/capture-screen)
   (exwm-input-set-key (kbd "<XF86Launch1>") #'dnixty/reconnect-headphones)
+  (exwm-input-set-key (kbd "<XF86Display>") #'dnixty/refresh-display)
   ;; Simulation keys
   (exwm-input-set-simulation-keys
    '(([?\C-b] . left)
