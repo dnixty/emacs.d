@@ -885,6 +885,15 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :config
   (setq sly-mrepl-history-file-name (expand-file-name "sly-mrepl-history" user-emacs-directory)))
 
+;; Prettify symbols
+(use-package prog-mode
+  :hook ((emacs-lisp-mode-hook . prettify-symbols-mode)
+         (eval-expression-minibuffer-setup-hook . prettify-symbols-mode)
+         (ielm-mode-hook . prettify-symbols-mode)
+         (lisp-mode-hook . prettify-symbols-mode)
+         (lisp-interaction-mode-hook . prettify-symbols-mode)
+         (scheme-mode-hook . prettify-symbols-mode)))
+
 ;; Flycheck
 (use-package flycheck
   :config
