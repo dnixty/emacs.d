@@ -3,7 +3,7 @@
 ;;; Table of contents
 ;;   1. Prerequisites
 ;;   2. Base settings
-;;   3. Window manager
+;;   3. Aliases and custom commands
 ;;   4. Selection narrowing and search
 ;;   5. General interface
 ;;   6. Programming languages
@@ -46,22 +46,7 @@
 ;; Base typeface configurations
 (use-package emacs
   :config
-  (defun dnixty/laptop-font ()
-    "Font for the small laptop screen."
-    (interactive)
-    (when window-system
-      (set-face-attribute 'default nil :family "Hack" :height 110)))
-  (defun dnixty/desktop-font ()
-    "Font for the larger desktop screen."
-    (interactive)
-    (when window-system
-      (set-face-attribute 'default nil :family "Hack" :height 140)))
-  (defun dnixty/set-font ()
-    (when window-system
-      (if (<= (display-pixel-width) 1366)
-          (dnixty/laptop-font)
-        (dnixty/desktop-font))))
-  :hook (window-setup-hook . dnixty/set-font))
+  (set-frame-font "Hack 11"))
 
 ;; Unique names for buffers
 (use-package uniquify
@@ -118,7 +103,14 @@
   :config
   (setq recentf-max-saved-items 200)
   (setq recentf-exclude '(".gz" ".xz" ".zip" "/elpa/" "/ssh:" "/sudo:"))
-  :hook (after-init-hook . recentf-mode))
+  (defun dnixty/recentf ()
+    (interactive)
+    (let* ((files (mapcar 'abbreviate-file-name recentf-list))
+           (f (icomplete-vertical-do ()
+                (completing-read "Open recentf entry: " files nil t))))
+      (find-file f)))
+  :hook (after-init-hook . recentf-mode)
+  :bind ("s-r" . dnixty/recentf))
 
 ;; Bookmarks
 (use-package bookmark
@@ -127,263 +119,42 @@
 
 
 ;;; --------------------------------------------------------------------
-;;; 3. Window manager
+;;; 3. Aliases and custom commands
 ;;; --------------------------------------------------------------------
 
-(use-package window
-  :init
-  (setq display-buffer-alist
-        '(("\\*\\(Flycheck\\|Flymake\\|Package-Lint\\|vc-git :\\).*"
-           (display-buffer-in-side-window)
-           (window-height . 0.16)
-           (side . top)
-           (slot . 0)
-           (window-parameters . ((no-other-window . t))))
-          ("\\*\\(Backtrace\\|Warnings\\|Compile-Log\\|Messages\\|breakpoints of.*\\)\\*"
-           (display-buffer-in-side-window)
-           (window-height . 0.16)
-           (side . top)
-           (slot . 1)
-           (window-parameters . ((no-other-window . t))))
-          ("\\*\\(Output\\|Register Preview\\|input/output of\\).*"
-           (display-buffer-in-side-window)
-           (window-width . 0.16)       ; See the :hook
-           (side . bottom)
-           (slot . -1)
-           (window-parameters . ((no-other-window . t))))
-          (".*\\*Completions.*"
-           (display-buffer-in-side-window)
-           (window-height . 0.16)
-           (side . bottom)
-           (slot . 0)
-           (window-parameters . ((no-other-window . t))))
-          ("^\\(\\*e?shell\\|\\*gud\\).*"
-           (display-buffer-in-side-window)
-           (window-height . 0.16)
-           (side . bottom)
-           (slot . 1))
-          ("\\*\\(Help\\|sly-description\\).*"
-           (display-buffer-in-side-window)
-           (window-width . 0.20)       ; See the :hook
-           (side . left)
-           (slot . 0)
-           (window-parameters . ((no-other-window . t))))
-          ("\\*rg\\*"
-           (display-buffer-in-side-window)
-           (window-width . 0.25)
-           (side . right)
-           (slot . 0))
-          ("\\*\\vc-\\(incoming\\|outgoing\\).*"
-           (display-buffer-at-bottom))))
-  (setq window-combination-resize t)
-  (setq even-window-sizes 'height-only)
-  :hook ((help-mode-hook . visual-line-mode)
-         (sly-popup-buffer-mode-hook . visual-line-mode))
-  :bind ("C-x +" . balance-windows-area))
-
-;; Exwm
-(use-package exwm
+(use-package emacs
   :config
-  (defun dnixty/exwm-rename-buffer ()
-    (interactive)
-    (exwm-workspace-rename-buffer
-     (concat exwm-class-name ": "
-             (if (<= (length exwm-title) 22)
-                 exwm-title
-               (concat (substring exwm-title 0 21) "…")))))
-  (defun dnixty/capture-screen ()
-    (interactive)
-    (start-process "" nil "flameshot" "gui"))
-  (defun dnixty/suspend-to-sleep ()
-    (interactive)
-    (call-process "loginctl" nil nil nil "lock-session"))
-  (defun dnixty/reconnect-headphones ()
-    (interactive)
-    (start-process "" nil "bluetoothctl" "connect" "28:11:A5:DF:19:9F"))
   (defun dnixty/switch-to-other ()
     (interactive)
     (switch-to-buffer (other-buffer (current-buffer) 1)))
-  (defun dnixty/describe-symbol-at-point ()
-    (interactive)
-    (let ((symbol (symbol-at-point)))
-      (when symbol
-        (describe-symbol symbol))))
-  (defun dnixty/describe-symbol-at-point-switch ()
-    (interactive)
-    (dnixty/describe-symbol-at-point)
-    (let ((help (get-buffer-window "*Help*")))
-      (when help
-        (if (not (eq (selected-window) help))
-            (select-window help)
-          (select-window (get-mru-window))))))
-  (defun dnixty/refresh-display ()
-    (interactive)
-    (dnixty/exwm-change-screen-hook))
-  (defun dnixty/recentf ()
-    (interactive)
-    (let ((files (mapcar 'abbreviate-file-name recentf-list)))
-      (find-file
-       (completing-read "Open recentf entry: " files nil t))))
-  (defun dnixty/eshell-multi ()
-    (interactive)
-    (let* ((parent (if (buffer-file-name)
-                       (file-name-directory (buffer-file-name))
-                     default-directory))
-           (name (car (last (split-string parent "/" t)))))
-      (with-current-buffer (eshell)
-        (rename-buffer
-         (generate-new-buffer-name (concat "*eshell: " name "*"))))))
-  ;; Make sure that XF86 keys work in exwm buffers as well
-  (dolist (k '(XF86AudioLowerVolume
-               XF86AudioRaiseVolume
-               XF86AudioMute
-               XF86Launch1
-               XF86Display
-               print
-               f5))
-    (cl-pushnew k exwm-input-prefix-keys))
-  ;; Global keys
-  (exwm-input-set-key (kbd "s-&") #'(lambda (command)
-                                      (interactive (list (read-shell-command "$ ")))
-                                      (start-process-shell-command command nil command)))
-  (exwm-input-set-key (kbd "s-0") #'delete-window)
-  (exwm-input-set-key (kbd "s-1") #'delete-other-windows)
-  (exwm-input-set-key (kbd "s-2") #'split-window-below)
-  (exwm-input-set-key (kbd "s-3") #'split-window-right)
-  (exwm-input-set-key (kbd "s-b") #'switch-to-buffer)
-  (exwm-input-set-key (kbd "s-B") #'switch-to-buffer-other-window)
-  (exwm-input-set-key (kbd "s-d") #'dired)
-  (exwm-input-set-key (kbd "s-D") #'dired-other-window)
-  (exwm-input-set-key (kbd "s-f") #'find-file)
-  (exwm-input-set-key (kbd "s-F") #'find-file-other-window)
-  (exwm-input-set-key (kbd "s-h") #'dnixty/describe-symbol-at-point)
-  (exwm-input-set-key (kbd "s-H") #'dnixty/describe-symbol-at-point-switch)
-  (exwm-input-set-key (kbd "s-i") #'follow-delete-other-windows-and-split)
-  (exwm-input-set-key (kbd "s-j") #'dired-jump)
-  (exwm-input-set-key (kbd "s-J") #'dired-jump-other-window)
-  (exwm-input-set-key (kbd "s-k") #'kill-this-buffer)
-  (exwm-input-set-key (kbd "s-m") #'gnus)
-  (exwm-input-set-key (kbd "s-o") #'other-window)
-  (exwm-input-set-key (kbd "s-O") #'exwm-layout-toggle-fullscreen)
-  (exwm-input-set-key (kbd "s-p") #'password-store-copy)
-  (exwm-input-set-key (kbd "s-P") #'password-store-otp-token-copy)
-  (exwm-input-set-key (kbd "s-q") #'window-toggle-side-windows)
-  (exwm-input-set-key (kbd "s-r") #'dnixty/recentf)
-  (exwm-input-set-key (kbd "s-R") #'exwm-reset)
-  (exwm-input-set-key (kbd "s-v") #'magit-status)
-  (exwm-input-set-key (kbd "s-X") #'exwm-input-toggle-keyboard)
-  (exwm-input-set-key (kbd "s-Z") #'dnixty/suspend-to-sleep)
-  (exwm-input-set-key (kbd "s-SPC") #'exwm-floating-toggle-floating)
-  (exwm-input-set-key (kbd "C-s-.") #'winner-redo)
-  (exwm-input-set-key (kbd "C-s-,") #'winner-undo)
-  (exwm-input-set-key (kbd "s-<return>") #'eshell)
-  (exwm-input-set-key (kbd "s-S-<return>") #'dnixty/eshell-multi)
-  (exwm-input-set-key (kbd "s-<tab>") #'dnixty/switch-to-other)
-  (exwm-input-set-key (kbd "s-,") #'previous-buffer)
-  (exwm-input-set-key (kbd "s-.") #'next-buffer)
-  (exwm-input-set-key (kbd "C-s-b") #'windmove-left)
-  (exwm-input-set-key (kbd "C-s-n") #'windmove-down)
-  (exwm-input-set-key (kbd "C-s-p") #'windmove-up)
-  (exwm-input-set-key (kbd "C-s-f") #'windmove-right)
-  (exwm-input-set-key (kbd "<print>") #'dnixty/capture-screen)
-  (exwm-input-set-key (kbd "<XF86Launch1>") #'dnixty/reconnect-headphones)
-  (exwm-input-set-key (kbd "<XF86Display>") #'dnixty/refresh-display)
-  ;; Simulation keys
-  (exwm-input-set-simulation-keys
-   '(([?\C-b] . left)
-     ([?\M-b] . C-left)
-     ([?\C-f] . right)
-     ([?\M-f] . C-right)
-     ([?\C-p] . up)
-     ([?\C-n] . down)
-     ([?\C-a] . home)
-     ([?\C-e] . end)
-     ([?\M-v] . prior)
-     ([?\C-v] . next)
-     ([?\C-d] . delete)
-     ([?\C-k] . (S-end delete))
-     ([?\C-g] . escape)
-     ([?\M-n] . ?\C-n)
-     ([?\M-a] . ?\C-a)
-     ([?\M-k] . ?\C-w)
-     ([?\C-w] . ?\C-x)
-     ([?\M-w] . ?\C-c)
-     ([?\C-y] . ?\C-v)
-     ([?\C-s] . ?\C-f)))
-  ;; Force exwm to manage specific windows
-  (add-to-list 'exwm-manage-configurations
-               '((string= exwm-title "Wasabi Wallet") managed t))
-  ;; Allow non-floating resizing with mouse
-  (setq window-divider-default-bottom-width 2)
-  (setq window-divider-default-right-width 2)
-  (window-divider-mode)
-  :bind (("C-x C-c" . save-buffers-kill-emacs))
-  :hook ((exwm-update-class-hook . dnixty/exwm-rename-buffer)
-         (exwm-update-title-hook . dnixty/exwm-rename-buffer)
-         (exwm-floating-setup-hook . exwm-layout-hide-mode-line)
-         (exwm-floating-exit-hook . exwm-layout-show-mode-line)))
+  :bind (("s-0" . delete-window)
+         ("s-1" . delete-other-windows)
+         ("s-2" . split-window-below)
+         ("s-3" . split-window-right)
+         ("s-b" . switch-to-buffer)
+         ("s-B" . switch-to-buffer-other-window)
+         ("s-d" . dired)
+         ("s-D" . dired-other-window)
+         ("s-f" . find-file)
+         ("s-F" . find-file-other-window)
+         ("s-i" . imenu)
+         ("s-j" . dired-jump)
+         ("s-J" . dired-jump-other-window)
+         ("s-k" . kill-this-buffer)
+         ("s-o" . other-window)
+         ("s-p" . password-store-copy)
+         ("s-P" . password-store-otp-token-copy)
+         ("s-q" . window-toggle-side-windows)
+         ("s-v" . magit-status)
+         ("s-<return>" . eshell)
+         ("s-<tab>" . dnixty/switch-to-other)
+         ("s-," . previous-buffer)
+         ("s-." . next-buffer)
+         ("C-s-b" . windmove-left)
+         ("C-s-n" . windmove-down)
+         ("C-s-p" . windmove-up)
+         ("C-s-f" . windmove-right)))
 
-(use-package exwm-randr
-  :after exwm
-  :demand t
-  :commands exwm-randr-enable
-  :config
-  (defun dnixty/exwm-change-screen-hook ()
-    (let ((xrandr-output-regexp "\n\\([^ ]+\\) connected ")
-          (xrandr-monitor-regexp "\n .* \\([^ \n]+\\)")
-          default-output)
-      (with-temp-buffer
-        (call-process "xrandr" nil t nil)
-        (goto-char (point-min))
-        (re-search-forward xrandr-output-regexp nil 'noerror)
-        (setq default-output (match-string 1))
-        (forward-line)
-        (if (not (re-search-forward xrandr-output-regexp nil 'noerror))
-            (progn
-              (call-process "xrandr" nil nil nil "--output" default-output "--auto" "--primary")
-              (with-temp-buffer
-                (call-process "xrandr" nil t nil "--listactivemonitors")
-                (goto-char (point-min))
-                (while (not (eobp))
-                  (when (and (re-search-forward xrandr-monitor-regexp nil 'noerror)
-                             (not (string= (match-string 1) default-output)))
-                    (call-process "xrandr" nil nil nil "--output" (match-string 1) "--auto")))))
-          (call-process
-           "xrandr" nil nil nil
-           "--output" (match-string 1) "--primary" "--auto"
-           "--output" default-output "--off")
-          (setq exwm-randr-workspace-monitor-plist (list 0 (match-string 1))))
-        (dnixty/set-font)
-        (exwm-randr-refresh))))
-  (exwm-randr-enable)
-  :hook (exwm-randr-screen-change-hook . dnixty/exwm-change-screen-hook))
-
-;; Pulseaudio
-(use-package pulseaudio-control
-  :after exwm
-  :config
-  (setq pulseaudio-control-use-default-sink t
-        pulseaudio-control-volume-step "2%")
-  (exwm-input-set-key (kbd "<XF86AudioLowerVolume>") #'pulseaudio-control-decrease-volume)
-  (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>") #'pulseaudio-control-increase-volume)
-  (exwm-input-set-key (kbd "<XF86AudioMute>") #'pulseaudio-control-toggle-current-sink-mute))
-
-;; Display current time
-(use-package time
-  :config
-  (setq display-time-format "%H:%M  %Y-%m-%d")
-  (setq display-time-default-load-average nil)
-  (display-time-mode))
-
-;; Battery status
-(use-package battery
-  :config
-  (setq battery-mode-line-format "  [%b%p%%]")
-  (setq battery-mode-line-limit 99)
-  (setq battery-update-interval 180)
-  (setq battery-load-low 20)
-  (setq battery-load-critical 10)
-  (display-battery-mode))
 
 
 ;;; --------------------------------------------------------------------
@@ -695,8 +466,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq inhibit-startup-screen t)
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
-  (global-unset-key (kbd "C-h h"))
-  (global-unset-key (kbd "M-i")))
+  (global-unset-key (kbd "C-h h")))
 
 ;; Theme
 (use-package modus-operandi-theme
@@ -829,35 +599,25 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :config
   (global-eldoc-mode 1))
 
-(use-package flyspell
-  :config
-  (setq ispell-program-name "aspell"))
-
-;; Lookup word
-(use-package ispell
-  :commands ispell-get-word
-  :config
-  (defconst dnixty/dictionary-root "https://dictionary.cambridge.org/dictionary/english/")
-  (defun dnixty/lookup-word (word)
-    (interactive (list (save-excursion (car (ispell-get-word nil)))))
-    (browse-url (format "%s%s" dnixty/dictionary-root word)))
-  :bind ("M-#" . dnixty/lookup-word))
-
 ;; Winner mode
 (use-package winner
-  :hook (after-init-hook . winner-mode))
+  :hook (after-init-hook . winner-mode)
+  :bind (("C-s-." . winner-redo)
+         ("C-s-," . winner-undo)))
 
 ;; Delete selection
 (use-package delsel
   :hook (after-init-hook . delete-selection-mode))
 
-;; Collection of unpackaged commands or tweaks
+;; Splits
 (use-package emacs
   :config
   (setq split-height-threshold nil)
-  (setq split-width-threshold 130)
-  :bind (("C-x k" . kill-this-buffer)
-         ("M-i" . imenu)))
+  (setq split-width-threshold 130))
+
+;; Go to last change
+(use-package goto-last-change
+  :bind ("C-z" . goto-last-change))
 
 
 
@@ -899,7 +659,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled)))
 
-;; Js
+;; Javascript
 (use-package js
   :config
   (setq js-indent-level 2))
@@ -907,7 +667,6 @@ This function is meant to be mapped to a key in `rg-mode-map'."
 ;; Typescript
 (use-package tide
   :mode ("\\.tsx?\\'" . typescript-mode)
-  ;; :after (typescript-mode flycheck)
   :config
   (setq typescript-indent-level 2)
   :hook ((typescript-mode-hook . tide-setup)
@@ -945,142 +704,8 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq calendar-longitude -0.076132)
   :hook (calendar-today-visible-hook . calendar-mark-today))
 
-;; Gnus
-(use-package auth-source
-  :config
-  (setq user-full-name "Dominik Stodolny")
-  (setq user-mail-address "dominik@stodolny.org"))
-(use-package message
-  :config
-  (setq mail-user-agent 'gnus-user-agent)
-  (setq compose-mail-user-agent-warnings nil)
-  (setq mail-signature "Dominik Stodolny\n")
-  (setq message-signature "Dominik Stodolny\n")
-  (setq message-citation-line-format "%f [%Y-%m-%d, %R %z]:\n")
-  (setq message-citation-line-function
-        'message-insert-formatted-citation-line)
-  (setq message-kill-buffer-on-exit t)
-  (setq message-wide-reply-confirm-recipients t)
-  :hook (message-setup-hook . message-sort-headers))
-(use-package gnus
-  :config
-  (setq gnus-select-method '(nnnil ""))
-  (setq gnus-secondary-select-methods
-        '((nntp "news.gwene.org")
-          (nnimap "main"
-                  (nnimap-address "mail.gandi.net")
-                  (nnimap-stream ssl)
-                  (nnimap-authinfo-file "~/.authinfo.gpg"))
-          (nnimap "dmk"
-                  (nnimap-address "mail.gandi.net")
-                  (nnimap-stream ssl)
-                  (nnimap-authinfo-file "~/.authinfo.gpg"))))
-  (setq gnus-message-archive-group "nnimap+main:Sent")
-  (setq gnus-gcc-mark-as-read t)
-  (setq gnus-always-read-dribble-file t)
-  (setq gnus-novice-user nil))
-(use-package nnmail
-  :config
-  (setq nnmail-expiry-wait 30))
-(use-package gnus-agent
-  :after gnus
-  :config
-  (setq gnus-agent-expire-days 30))
-(use-package gnus-async
-  :after gnus
-  :config
-  (setq gnus-asynchronous t)
-  (setq gnus-use-article-prefetch 15))
-(use-package gnus-group
-  :after gnus
-  :demand
-  :config
-  (setq gnus-list-groups-with-ticked-articles nil)
-  (setq gnus-group-sort-function
-        '((gnus-group-sort-by-unread)
-          (gnus-group-sort-by-alphabet)
-          (gnus-group-sort-by-rank)))
-  (setq gnus-group-mode-line-format "%%b")
-  :hook ((gnus-group-mode-hook . hl-line-mode)
-         (gnus-select-group-hook . gnus-group-set-timestamp))
-  :bind (:map gnus-agent-group-mode-map
-              ("M-n" . gnus-topic-goto-next-topic)
-              ("M-p" . gnus-topic-goto-previous-topic)))
-(use-package gnus-topic
-  :after (gnus gnus-group)
-  :config
-  (setq gnus-topic-display-empty-topics nil)
-  :hook (gnus-group-mode-hook . gnus-topic-mode))
-(use-package gnus-sum
-  :after (gnus gnus-group)
-  :demand
-  :config
-  (setq gnus-auto-select-first nil)
-  (setq gnus-summary-ignore-duplicates t)
-  (setq gnus-suppress-duplicates t)
-  (setq gnus-thread-sort-functions
-        '((not gnus-thread-sort-by-date)
-          (not gnus-thread-sort-by-number)))
-  (setq gnus-subthread-sort-functions
-        'gnus-thread-sort-by-date)
-  (setq gnus-user-date-format-alist
-        '(((gnus-seconds-today) . "Today at %R")
-          ((+ 86400 (gnus-seconds-today)) . "Yesterday, %R")
-          (t . "%Y-%m-%d %R")))
-
-  (setq gnus-ignored-from-addresses "Dominik Stodolny")
-  (setq gnus-summary-to-prefix "To: ")
-
-  (setq gnus-summary-line-format "%U%R%z %-16,16&user-date;  %4L:%-30,30f  %B%s\n")
-  (setq gnus-summary-mode-line-format "%p")
-  (setq gnus-sum-thread-tree-false-root "─┬> ")
-  (setq gnus-sum-thread-tree-indent " ")
-  (setq gnus-sum-thread-tree-leaf-with-other "├─> ")
-  (setq gnus-sum-thread-tree-root "")
-  (setq gnus-sum-thread-tree-single-leaf "└─> ")
-  (setq gnus-sum-thread-tree-vertical "│")
-  :hook (gnus-summary-mode-hook . hl-line-mode)
-  :bind (:map gnus-agent-summary-mode-map
-              ("<delete>" . gnus-summary-delete-article)
-              ("n" . gnus-summary-next-article)
-              ("p" . gnus-summary-prev-article)
-              ("N" . gnus-summary-next-unread-article)
-              ("P" . gnus-summary-prev-unread-article)
-              ("M-n" . gnus-summary-next-thread)
-              ("M-p" . gnus-summary-prev-thread)
-              ("C-M-n" . gnus-summary-next-group)
-              ("C-M-p" . gnus-summary-prev-group)
-              ("C-M-^" . gnus-summary-refer-thread)))
-(use-package gnus-srvr
-  :after gnus
-  :hook ((gnus-browse-mode-hook gnus-server-mode-hook) . hl-line-mode))
-(use-package gnus-win
-  :config
-  (setq gnus-use-full-window nil))
-(use-package gnus-dired
-  :after (gnus dired)
-  :hook (dired-mode-hook . gnus-dired-mode))
-(use-package smtpmail
-  :init
-  (setq smtpmail-default-smtp-server "mail.gandi.net")
-  :config
-  (setq smtpmail-smtp-server "mail.gandi.net")
-  (setq smtpmail-stream-type 'ssl)
-  (setq smtpmail-smtp-service 465))
-(use-package smtpmail-async
-  :after smtpmail
-  :config
-  (setq send-mail-function 'async-smtpmail-send-it)
-  (setq message-send-mail-function 'async-smtpmail-send-it))
-
 ;; Org
 (use-package org)
-
-;; Encryption
-(use-package pinentry
-  :config
-  (setq-default epg-pinentry-mode 'loopback)
-  :hook (after-init-hook . pinentry-start))
 
 ;; Eshell
 (use-package em-term
@@ -1152,9 +777,9 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (setq password-store-time-before-clipboard-restore 30))
 (use-package password-store-otp
   :after password-store)
-(use-package pass
-  :defer
-  :commands pass)
+;; (use-package pass
+;;   :defer
+;;   :commands pass)
 
 ;; Pdf
 (use-package pdf-tools
@@ -1166,6 +791,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (pdf-tools-install))
 
 ;; Dired
+;; TODO: review
 (use-package dired
   :config
   (setq dired-recursive-copies 'always)
