@@ -28,6 +28,7 @@
   :config
   (setq user-emacs-directory "~/.cache/emacs/"))
 
+
 
 ;;; --------------------------------------------------------------------
 ;;; 2. Base settings
@@ -46,7 +47,10 @@
 ;; Base typeface configurations
 (use-package emacs
   :config
-  (set-frame-font "Hack 11"))
+  (defun dnixty/set-font ()
+    (when window-system
+      (set-face-attribute 'default nil :family "Hack" :height 110)))
+  :hook (after-init-hook . dnixty/set-font))
 
 ;; Unique names for buffers
 (use-package uniquify
