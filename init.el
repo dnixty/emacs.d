@@ -142,18 +142,15 @@
          ("s-J" . dired-jump-other-window)
          ("s-k" . kill-this-buffer)
          ("s-o" . other-window)
-         ("s-p" . password-store-copy)
-         ("s-P" . password-store-otp-token-copy)
          ("s-q" . window-toggle-side-windows)
-         ("s-v" . magit-status)
-         ("s-<return>" . eshell)
          ("s-<tab>" . dnixty/switch-to-other)
          ("s-," . previous-buffer)
          ("s-." . next-buffer)
          ("C-s-b" . windmove-left)
          ("C-s-n" . windmove-down)
          ("C-s-p" . windmove-up)
-         ("C-s-f" . windmove-right)))
+         ("C-s-f" . windmove-right)
+         ("M-/" . hippie-expand)))
 
 
 
@@ -263,60 +260,11 @@
          :map icomplete-minibuffer-map
          ("C-v" . icomplete-vertical-toggle)))
 
-(use-package project
-  :after (minibuffer icomplete icomplete-vertical)
+(use-package projectile
   :config
-  (defun dnixty/find-file-vc-or-dir (&optional arg)
-    "Find file by name that belongs to the current project or dir.
-With \\[universal-argument] match files by contents.  This
-requires the command-line executable called 'rg' or 'ripgrep'."
-    (interactive "P")
-    (let* ((default-directory (file-name-directory
-                               (or (locate-dominating-file "." ".git" )
-                                   default-directory))))
-      (if arg
-          (let* ((regexp (read-regexp
-                          (concat "File contents matching REGEXP in "
-                                  (propertize default-directory 'face 'bold)
-                                  ": ")))
-                 (results (process-lines "rg" "-l" "--hidden" "-m" "1" "-M" "120" regexp)))
-            (find-file
-             (icomplete-vertical-do ()
-               (completing-read (concat
-                                 "Files with contents matching "
-                                 (propertize regexp 'face 'success)
-                                 (format " (%s)" (length results))
-                                 ": ")
-                                results nil t))))
-        (let* ((filenames-all (directory-files-recursively default-directory ".*" nil t))
-               (filenames (cl-remove-if (lambda (x)
-                                          (string-match-p "\\.git" x))
-                                        filenames-all)))
-          (icomplete-vertical-do ()
-            (find-file
-             (completing-read "Find file recursively: " filenames nil t)))))))
-
-  (defun dnixty/find-project (&optional arg)
-    "Switch to sub-directory at the specified locations.
-With \\[universal-argument] produce a `dired' buffer instead with
-all the possible candidates."
-    (interactive "P")
-    (let* ((dirs (list "~/src"))
-           (dotless directory-files-no-dot-files-regexp)
-           (cands (mapcan (lambda (d)
-                            (directory-files d t dotless))
-                          dirs))
-           (projects (mapcar 'abbreviate-file-name cands))
-           (buf "*Projects Dired*"))
-      (if arg
-          (dired (cons (generate-new-buffer-name buf) projects))
-        (icomplete-vertical-do ()
-          (dired
-           (completing-read "Find project: " projects nil t))))))
-
-  :bind (("s-s p" . dnixty/find-project)
-         ("s-s f" . dnixty/find-file-vc-or-dir)
-         ("s-s l" . find-library)))
+  (define-key projectile-mode-map (kbd "s-s") 'projectile-command-map)
+  (setq projectile-completion-system 'default)
+  (projectile-mode +1))
 
 (use-package emacs
   :after (minibuffer icomplete icomplete-vertical)
@@ -345,18 +293,6 @@ Use as a value for `completion-in-region-function'."
   (setq completion-in-region-function #'contrib/completing-read-in-region)
   :bind (:map minibuffer-local-completion-map
               ("<tab>" . minibuffer-force-complete)))
-
-(use-package dabbrev
-  :after (minibuffer icomplete icomplete-vertical)
-  :config
-  (setq dabbrev-abbrev-char-regexp "\\sw\\|\\s_")
-  (setq dabbrev-abbrev-skip-leading-regexp "\\$\\|\\*\\|/\\|=")
-  (setq dabbrev-backward-only nil)
-  (setq dabbrev-case-distinction nil)
-  (setq dabbrev-case-fold-search t)
-  (setq dabbrev-case-replace nil)
-  (setq dabbrev-eliminate-newlines nil)
-  (setq dabbrev-upcase-means-case-search t))
 
 (use-package ibuffer
   :config
@@ -392,6 +328,20 @@ Use as a value for `completion-in-region-function'."
               ("/ V" . ibuffer-vc-set-filter-groups-by-vc-root)
               ("/ <deletechar>" . ibuffer-clear-filter-groups)))
 
+(use-package scratch
+  :config
+  (defun dnixty/scratch-buffer-setup ()
+    (let* ((mode (format "%s" major-mode))
+            (string (concat "Scratch buffer for: " mode "\n\n")))
+         (when scratch-buffer
+           (save-excursion
+             (insert string)
+             (goto-char (point-min))
+             (comment-region (point-at-bol) (point-at-eol)))
+           (next-line 2))
+         (rename-buffer (concat "*Scratch for " mode "*") t)))
+  :hook (scratch-create-buffer-hook . dnixty/scratch-buffer-setup)
+  :bind ("C-c s" . scratch))
 
 (use-package isearch
   :diminish
@@ -402,52 +352,6 @@ Use as a value for `completion-in-region-function'."
   (setq isearch-yank-on-move 'shift)
   (setq isearch-allow-scroll 'unlimited))
 
-(use-package wgrep
-  :config
-  (setq wgrep-auto-save-buffer t)
-  (setq wgrep-change-readonly-file t))
-
-(use-package rg
-  :after wgrep
-  :config
-  (setq rg-custom-type-aliases nil)
-  (rg-define-search dnixty/rg-vc-or-dir
-    "RipGrep in project root or present directory."
-    :query ask
-    :format regexp
-    :files "everything"
-    :dir (let ((vc (vc-root-dir)))
-           (if vc
-               vc                         ; search root project dir
-             default-directory))          ; or from the current dir
-    :confirm prefix
-    :flags ("--hidden -g !.git"))
-
-  (rg-define-search dnixty/rg-ref-in-dir
-    "RipGrep for thing at point in present directory."
-    :query point
-    :format regexp
-    :files "everything"
-    :dir default-directory
-    :confirm prefix
-    :flags ("--hidden -g !.git"))
-
-  (defun dnixty/rg-save-search-as-name ()
-    "Save `rg' buffer, naming it after the current search query.
-
-This function is meant to be mapped to a key in `rg-mode-map'."
-    (interactive)
-    (let ((pattern (car rg-pattern-history)))
-      (rg-save-search-as-name (concat "«" pattern "»"))))
-
-  :bind (("s-s g" . dnixty/rg-vc-or-dir)
-         ("s-s r" . dnixty/rg-ref-in-dir)
-         :map rg-mode-map
-         ("s" . dnixty/rg-save-search-as-name)
-         ("C-n" . next-line)
-         ("C-p" . previous-line)
-         ("M-n" . rg-next-file)
-         ("M-p" . rg-prev-file)))
 
 
 ;;; --------------------------------------------------------------------
@@ -708,6 +612,8 @@ This function is meant to be mapped to a key in `rg-mode-map'."
 (use-package org)
 
 ;; Eshell
+(use-package eshell
+  :bind (("s-<return>" . eshell)))
 (use-package em-term
   :config
   (setq eshell-destroy-buffer-when-process-dies t))
@@ -748,7 +654,8 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :init)
 
 ;; Magit
-(use-package magit)
+(use-package magit
+  :bind (("s-v" . magit-status)))
 (use-package git-commit
   :after magit
   :config
@@ -760,12 +667,7 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   :after magit
   :config
   (setq magit-diff-refine-hunk t))
-(use-package magit-repos
-  :after magit
-  :commands magit-list-repositories
-  :config
-  (setq magit-repository-directories
-        '(("~/src" . 1))))
+
 
 ;; Password Store
 (use-package password-store
@@ -774,12 +676,11 @@ This function is meant to be mapped to a key in `rg-mode-map'."
              password-store-edit
              password-store-insert)
   :config
-  (setq password-store-time-before-clipboard-restore 30))
+  (setq password-store-time-before-clipboard-restore 30)
+  :bind (("s-p" . password-store-copy)))
 (use-package password-store-otp
-  :after password-store)
-;; (use-package pass
-;;   :defer
-;;   :commands pass)
+  :after password-store
+  :bind (("s-P" . password-store-otp-token-copy)))
 
 ;; Pdf
 (use-package pdf-tools
@@ -791,7 +692,6 @@ This function is meant to be mapped to a key in `rg-mode-map'."
   (pdf-tools-install))
 
 ;; Dired
-;; TODO: review
 (use-package dired
   :config
   (setq dired-recursive-copies 'always)
