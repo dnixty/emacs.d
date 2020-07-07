@@ -791,11 +791,5 @@ Use as a value for `completion-in-region-function'."
 ;; Restclient
 (use-package restclient)
 
-;; Encryption
-(use-package pinentry
-  :config
-  (setq-default epg-pinentry-mode 'loopback)
-  :hook (after-init-hook . pinentry-start))
-
 
 ;;; init.el ends here
