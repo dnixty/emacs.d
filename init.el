@@ -354,6 +354,13 @@ Use as a value for `completion-in-region-function'."
   (setq isearch-yank-on-move 'shift)
   (setq isearch-allow-scroll 'unlimited))
 
+(use-package ace-window
+  :init
+  (progn
+    (global-set-key [remap other-window] 'ace-window)
+    (custom-set-faces
+     '(aw-leading-char-face
+       ((t (:inherit ace-jump-face-foreground :height 1.0)))))))
 
 
 ;;; --------------------------------------------------------------------
