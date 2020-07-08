@@ -265,6 +265,7 @@
          ("C-v" . icomplete-vertical-toggle)))
 
 (use-package projectile
+  :diminish
   :config
   (define-key projectile-mode-map (kbd "s-s") 'projectile-command-map)
   (setq projectile-completion-system 'default)
