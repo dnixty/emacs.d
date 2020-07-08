@@ -44,13 +44,10 @@
         (expand-file-name (format "emacs-custom-%s.el" (user-uid))
                           temporary-file-directory)))
 
-;; Base typeface configurations
+;; Font configuration
 (use-package emacs
   :config
-  (defun dnixty/set-font ()
-    (when window-system
-      (set-face-attribute 'default nil :family "Hack" :height 110)))
-  :hook (after-init-hook . dnixty/set-font))
+  (setq default-frame-alist '((font . "Hack 11"))))
 
 ;; Unique names for buffers
 (use-package uniquify
