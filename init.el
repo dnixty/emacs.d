@@ -642,7 +642,13 @@
   (setq dired-dwim-target t)
   :hook ((dired-mode-hook . dired-hide-details-mode)
          (dired-mode-hook . hl-line-mode))
-  :bind (:map dired-mode-map
+  :bind (("s-<f1>" . (lambda () (interactive) (dired "~/")))
+         ("s-<f2>" . (lambda () (interactive) (dired "~/src")))
+         ("s-<f3>" . (lambda () (interactive) (dired "~/prv/notes")))
+         ("s-<f4>" . (lambda () (interactive) (dired "~/tmp")))
+         ("s-<f11>" . (lambda () (interactive) (dired "/mnt/archive")))
+         ("s-<f12>" . (lambda () (interactive) (dired "/mnt/torrents")))
+         :map dired-mode-map
               ("C-l" . dired-up-directory)))
 (use-package dired-aux
   :config
