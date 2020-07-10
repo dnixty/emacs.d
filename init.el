@@ -411,6 +411,36 @@
   (setq isearch-lazy-count t)
   (setq isearch-allow-scroll 'unlimited))
 
+(use-package rg
+  :defer
+  :config
+  (rg-define-search
+   dnixty/rg-vc-or-dir
+   "RipGrep in project root or present directory."
+   :query ask
+   :format regexp
+   :files "everything"
+   :dir (let ((vc (vc-root-dir)))
+          (if vc
+              vc
+            default-directory))
+   :confirm prefix
+   :flags ("--hidden -g !.git"))
+  (rg-define-search
+   dnixty/rg-ref-in-dir
+   "RipGrep for thing at point in present directory."
+   :query point
+   :format regexp
+   :files "everything"
+   :dir default-directory
+   :confirm prefix
+   :flags ("--hidden -g !.git"))
+
+  :bind (("s-s g" . dnixty/rg-vc-or-dir)
+         ("s-s r" . dnixty/rg-ref-in-dir)))
+
+(use-package wgrep)
+
 
 
 ;;; --------------------------------------------------------------------
