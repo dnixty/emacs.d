@@ -15,17 +15,27 @@
 ;;; 1. Prerequisites
 ;;; --------------------------------------------------------------------
 
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(unless package--initialized (package-initialize))
+
+;; Make sure `use-package' is available.
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
 ;; Configure `use-package' prior to loading it.
 (eval-and-compile
-  (setq use-package-enable-imenu-support t)
   (setq use-package-hook-name-suffix nil))
 
-;; Setup use-package
 (eval-when-compile
   (require 'use-package))
 
 ;; Enable modeline diminishers
-(use-package diminish)
+(use-package diminish
+             :ensure)
 
 ;; Move user-emacs-directory
 (use-package emacs
@@ -51,14 +61,16 @@
   (setq inhibit-startup-screen t))
 
 ;; Font configuration
-(use-package emacs
-  :config
-  (add-to-list 'default-frame-alist '(font . "Hack 11")))
+;; (use-package emacs
+;;   :config
+;;   (add-to-list 'default-frame-alist '(font . "Hack 11")))
 
 ;; Theme
 (use-package modus-operandi-theme
+  :ensure
   :demand t)
 (use-package modus-vivendi-theme
+  :ensure
   :demand t)
 (use-package emacs
   :after (modus-operandi-theme modus-vivendi-theme)
@@ -223,6 +235,7 @@
 
 ;; Expand Region
 (use-package expand-region
+  :ensure
   :config
   (setq expand-region-smart-cursor t)
   :bind (("C-=" . er/expand-region)
@@ -253,6 +266,7 @@
 
 ;; Go to last change
 (use-package goto-last-change
+  :ensure
   :config
   (global-unset-key (kbd "C-z"))
   :bind ("C-z" . goto-last-change))
@@ -268,6 +282,7 @@
   :bind (("M-/" . hippie-expand)))
 
 (use-package scratch
+  :ensure
   :config
   (defun dnixty/scratch-buffer-setup ()
     (let* ((mode (format "%s" major-mode))
@@ -326,21 +341,23 @@
   :demand
   :config
   (setq icomplete-hide-common-prefix nil)
-  (setq icomplete-separator (propertize " ┆ " 'face 'shadow))
+  (setq icomplete-separator (propertize " · " 'face 'shadow))
   (setq icomplete-show-matches-on-no-input nil)
   (setq icomplete-prospects-height 1)
   (setq icomplete-in-buffer t)
 
   (icomplete-mode 1)
   :bind (:map icomplete-minibuffer-map
-              ("<tab>" . icomplete-force-complete)
+              ;; ("<tab>" . icomplete-force-complete)
               ("<return>" . icomplete-force-complete-and-exit)
               ("C-j" . exit-minibuffer)
               ("C-n" . icomplete-forward-completions)
               ("C-p" . icomplete-backward-completions)
-              ("C-l" . icomplete-fido-backward-updir)))
+              ;; ("C-l" . icomplete-fido-backward-updir)
+              ))
 
 (use-package icomplete-vertical
+  :ensure
   :demand
   :config
   (defun dnixty/icomplete-yank-kill-ring ()
@@ -427,6 +444,7 @@ Use as a value for `completion-in-region-function'."
   :bind (("C-x C-b" . ibuffer)))
 
 (use-package ibuffer-vc
+  :ensure
   :after (ibuffer vc)
   :config
   :hook (ibuffer-hook . ibuffer-vc-set-filter-groups-by-vc-root))
@@ -439,6 +457,7 @@ Use as a value for `completion-in-region-function'."
   (setq isearch-allow-scroll 'unlimited))
 
 (use-package rg
+  :ensure
   :defer
   :config
   (rg-define-search
@@ -466,7 +485,8 @@ Use as a value for `completion-in-region-function'."
   :bind (("s-s g" . dnixty/rg-vc-or-dir)
          ("s-s r" . dnixty/rg-ref-in-dir)))
 
-(use-package wgrep)
+(use-package wgrep
+  :ensure)
 
 
 
@@ -484,38 +504,18 @@ Use as a value for `completion-in-region-function'."
     (let ((symbol (symbol-at-point)))
       (when symbol
         (describe-symbol symbol))))
-  :bind (("s-0" . delete-window)
-         ("s-1" . delete-other-windows)
-         ("s-2" . split-window-below)
-         ("s-3" . split-window-right)
-         ("s-b" . switch-to-buffer)
-         ("s-B" . switch-to-buffer-other-window)
-         ("s-d" . dired)
-         ("s-D" . dired-other-window)
-         ("s-f" . find-file)
-         ("s-F" . find-file-other-window)
-         ("s-h" . dnixty/describe-symbol-at-point)
-         ("s-i" . imenu)
-         ("s-j" . dired-jump)
-         ("s-J" . dired-jump-other-window)
-         ("s-k" . kill-this-buffer)
-         ("s-o" . other-window)
-         ("s-<tab>" . dnixty/switch-to-other)
-         ("s-," . previous-buffer)
-         ("s-." . next-buffer)
-         ("C-s-b" . windmove-left)
-         ("C-s-n" . windmove-down)
-         ("C-s-p" . windmove-up)
-         ("C-s-f" . windmove-right)))
+  :bind (("C-c h" . dnixty/describe-symbol-at-point)
+         ("C-c i" . imenu)
+         ("C-c k" . kill-this-buffer)
+         ("C-c <tab>" . dnixty/switch-to-other)
+         ("C-c ," . previous-buffer)
+         ("C-c ." . next-buffer)))
 
 
 
 ;;; --------------------------------------------------------------------
 ;;; 6. Programming languages
 ;;; --------------------------------------------------------------------
-
-;; Nix Mode
-(use-package nix-mode)
 
 ;; Recognise subwords
 (use-package subword
@@ -524,6 +524,7 @@ Use as a value for `completion-in-region-function'."
 
 ;; Parentheses
 (use-package paredit
+  :ensure
   :diminish
   :hook ((emacs-lisp-mode-hook . enable-paredit-mode)
          (eval-expression-minibuffer-setup-hook . enable-paredit-mode)
@@ -541,14 +542,13 @@ Use as a value for `completion-in-region-function'."
 
 ;; Sly
 (use-package sly
+  :ensure
   :commands sly
   :config
   (setq inferior-lisp-program "sbcl")
   (setq sly-lisp-implementations
         `((sbcl ("sbcl" "--noinform"))
-          (clisp ("clisp" "--quiet")))))
-(use-package sly-mrepl
-  :config
+          (clisp ("clisp" "--quiet"))))
   (setq sly-mrepl-history-file-name (expand-file-name "sly-mrepl-history" user-emacs-directory)))
 
 ;; Prettify symbols
@@ -562,6 +562,7 @@ Use as a value for `completion-in-region-function'."
 
 ;; Flycheck
 (use-package flycheck
+  :ensure
   :config
   (setq flycheck-check-syntax-automatically '(save mode-enabled)))
 
@@ -572,6 +573,7 @@ Use as a value for `completion-in-region-function'."
 
 ;; Typescript
 (use-package tide
+  :ensure
   :mode ("\\.tsx?\\'" . typescript-mode)
   :hook ((typescript-mode-hook . tide-setup)
          (typescript-mode-hook . flycheck-mode)
@@ -579,11 +581,13 @@ Use as a value for `completion-in-region-function'."
 
 ;; Prettier
 (use-package prettier-js
+  :ensure
   :hook ((js-mode-hook . prettier-js-mode)
          (typescript-mode-hook . prettier-js-mode)))
 
 ;; Diff-hl
 (use-package diff-hl
+  :ensure
   :config
   (setq diff-hl-draw-borders nil)
   :hook (after-init-hook . global-diff-hl-mode))
@@ -613,7 +617,7 @@ Use as a value for `completion-in-region-function'."
 
 ;; Eshell
 (use-package eshell
-  :bind (("s-<return>" . eshell)))
+  :bind (("C-c <return>" . eshell)))
 (use-package em-term
   :config
   (setq eshell-destroy-buffer-when-process-dies t))
@@ -626,6 +630,7 @@ Use as a value for `completion-in-region-function'."
   (delq 'eshell-banner eshell-modules-list)
   (push 'eshell-tramp eshell-modules-list))
 (use-package esh-autosuggest
+  :ensure
   :config
   (setq esh-autosuggest-delay 0.5)
   :bind (:map esh-autosuggest-active-map
@@ -649,11 +654,13 @@ Use as a value for `completion-in-region-function'."
 
 ;; Ledger
 (use-package ledger-mode
+  :ensure
   :mode "\\.ldg$"
   :init)
 
 ;; Magit
 (use-package magit
+  :ensure
   :bind (("s-v" . magit-status)))
 (use-package git-commit
   :after magit
@@ -669,19 +676,22 @@ Use as a value for `completion-in-region-function'."
 
 ;; Password Store
 (use-package password-store
+  :ensure
   :defer
   :commands (password-store-copy
              password-store-edit
              password-store-insert)
   :config
   (setq password-store-time-before-clipboard-restore 30)
-  :bind (("s-p" . password-store-copy)))
+  :bind (("C-c p" . password-store-copy)))
 (use-package password-store-otp
+  :ensure
   :after password-store
-  :bind (("s-P" . password-store-otp-token-copy)))
+  :bind (("C-c P" . password-store-otp-token-copy)))
 
 ;; Pdf
-(use-package pdf-tools)
+(use-package pdf-tools
+  :ensure)
 (use-package pdf-occur
   :after pdf-tools
   :config
@@ -737,7 +747,8 @@ Use as a value for `completion-in-region-function'."
   (setq find-ls-option
         '("-ls" . "-AGFhlv --group-directories-first --time-style=long-iso"))
   (setq find-name-arg "-iname"))
-(use-package async)
+(use-package async
+  :ensure)
 (use-package dired-async
   :after (dired async)
   :hook (dired-mode-hook . dired-async-mode))
@@ -752,12 +763,15 @@ Use as a value for `completion-in-region-function'."
   (setq dired-bind-man nil)
   (setq dired-bind-info nil))
 (use-package diredfl
+  :ensure
   :hook (dired-mode-hook . diredfl-mode))
 (use-package trashed
+  :ensure
   :config
   (setq trashed-action-confirmer 'y-or-n-p)
   (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
 (use-package dired-single
+  :ensure
   :bind (([remap dired-find-file] . dired-single-buffer)
          ([remap dired-mouse-find-file-other-window] . dired-single-buffer-mouse)
          ([remap dired-up-directory] . dired-single-up-directory)))
