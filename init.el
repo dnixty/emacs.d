@@ -61,9 +61,9 @@
   (setq inhibit-startup-screen t))
 
 ;; Font configuration
-;; (use-package emacs
-;;   :config
-;;   (add-to-list 'default-frame-alist '(font . "Hack 11")))
+(use-package emacs
+  :config
+  (add-to-list 'default-frame-alist '(font . "Hack 11")))
 
 ;; Theme
 (use-package modus-operandi-theme
@@ -508,8 +508,8 @@ Use as a value for `completion-in-region-function'."
          ("C-c i" . imenu)
          ("C-c k" . kill-this-buffer)
          ("C-c <tab>" . dnixty/switch-to-other)
-         ("C-c ," . previous-buffer)
-         ("C-c ." . next-buffer)))
+         ("C-c C-," . previous-buffer)
+         ("C-c C-." . next-buffer)))
 
 
 
@@ -649,7 +649,7 @@ Use as a value for `completion-in-region-function'."
     (let ((hist (ring-elements eshell-history-ring)))
       (insert
        (completing-read "Input history: " hist nil t))))
-  :bind (:map eshell-hist-mode-map
+  :bind (:map eshell-mode-map
               ("M-r" . dnixty/eshell-complete-history)))
 
 ;; Ledger
@@ -690,12 +690,12 @@ Use as a value for `completion-in-region-function'."
   :bind (("C-c P" . password-store-otp-token-copy)))
 
 ;; Pdf
-(use-package pdf-tools
-  :ensure)
-(use-package pdf-occur
-  :after pdf-tools
-  :config
-  (pdf-tools-install))
+;; (use-package pdf-tools
+;;   :ensure)
+;; (use-package pdf-occur
+;;   :after pdf-tools
+;;   :config
+;;   (pdf-tools-install))
 
 ;; Dired
 (use-package dired
@@ -777,11 +777,11 @@ Use as a value for `completion-in-region-function'."
          ([remap dired-up-directory] . dired-single-up-directory)))
 
 ;; Proced
-(use-package proced
-  :commands proced
-  :config
-  (setq-default proced-auto-update-flag t)
-  (setq proced-auto-update-interval 1))
+;; (use-package proced
+;;   :commands proced
+;;   :config
+;;   (setq-default proced-auto-update-flag t)
+;;   (setq proced-auto-update-interval 1))
 
 
 ;;; init.el ends here
