@@ -78,12 +78,12 @@
 ;;; Packages
 (require 'ls-lisp)
 (require 'dired-x)
-(autoload 'magit "magit" "Magit" t)
-(when (require 'diff-hl nil t)
-  (setq diff-hl-draw-borders nil)
-  (add-hook 'after-init-hook 'global-diff-hl-mode)
+(with-eval-after-load 'magit
   (add-hook 'magit-pre-refresh-hook 'diff-hl-magit-pre-refresh)
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+(when (require 'diff-hl nil t)
+  (setq diff-hl-draw-borders nil)
+  (add-hook 'after-init-hook 'global-diff-hl-mode))
 
 
 ;;; Key bindings
