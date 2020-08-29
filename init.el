@@ -90,6 +90,7 @@
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (let ((map icomplete-minibuffer-map))
+  (define-key map (kbd "<tab>") 'minibuffer-force-complete)
   (define-key map (kbd "<return>") 'icomplete-force-complete-and-exit)
   (define-key map (kbd "C-n") 'icomplete-forward-completions)
   (define-key map (kbd "C-p") 'icomplete-backward-completions)
