@@ -82,7 +82,6 @@
 
 ;;; Key bindings
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
-(global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "M-;") 'comment-line)
 (global-set-key (kbd "C-,") 'previous-buffer)
 (global-set-key (kbd "C-.") 'next-buffer)
