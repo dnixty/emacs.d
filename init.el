@@ -58,6 +58,10 @@
 (setq ls-lisp-use-insert-directory-program nil)
 (setq dired-listing-switches "-AFhl")
 (setq vc-follow-symlinks t)
+(setq tab-always-indent 'complete)
+(setq ibuffer-display-summary nil)
+(setq ibuffer-show-empty-filter-groups nil)
+(setq search-whitespace-regexp ".*?")
 
 (save-place-mode)
 (icomplete-mode)
