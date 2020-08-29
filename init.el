@@ -74,11 +74,11 @@
 ;;; Packages
 (require 'ls-lisp)
 (require 'dired-x)
-(require 'magit)
-(require 'diff-hl)
+(autoload 'magit "magit" "Magit" t)
+(when (require 'diff-hl nil t)
+  (setq diff-hl-draw-borders nil)
+  (add-hook 'after-init-hook 'global-diff-hl-mode))
 
-(setq diff-hl-draw-borders nil)
-(add-hook 'after-init-hook 'global-diff-hl-mode)
 
 ;;; Key bindings
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
