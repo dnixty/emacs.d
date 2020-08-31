@@ -6,35 +6,32 @@
 
 
 ;;; Visual
+(require 'modus-operandi-theme)
+(require 'modus-vivendi-theme)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (setq inhibit-startup-screen t)
 (blink-cursor-mode -1)
-(setq default-frame-alist '((font . "Spleen-12")
-                            (background-color . "black")
-			    (foreground-color . "#aaaaaa")))
-(set-face-foreground 'font-lock-comment-face "white")
-(define-advice font-lock-fontify-keywords-region
-   (:around (f &rest args) do-nothing))
-(add-hook 'font-lock-mode-hook
-         (lambda ()
-           (add-function
-            :filter-return (local 'font-lock-syntactic-face-function)
-            (lambda (face)
-              (unless (memq face '(font-lock-doc-face
-                                   font-lock-string-face))
-                face)))))
-(defadvice set-face-attribute
-    (before no-bold (face frame &rest args) activate)
-  (setq args
-        (mapcar (lambda(x) (if (eq x 'bold) 'normal x))
-                args)))
+(setq calendar-latitude 51.508530)
+(setq calendar-longitude -0.076132)
+;; Light at sunrise
+(load-theme 'modus-operandi t t)
+(run-at-time (nth 1 (split-string (sunrise-sunset)))
+             (* 60 60 24)
+             (lambda () (enable-theme 'modus-operandi)))
+;; Dark at sunset
+(load-theme 'modus-vivendi t t)
+(run-at-time (nth 4 (split-string (sunrise-sunset)))
+             (* 60 60 24)
+             (lambda () (enable-theme 'modus-vivendi)))
 
 
 ;;; Base settings
 (defalias 'yes-or-no-p 'y-or-n-p)
 (setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
+(setq calendar-date-style 'iso)
+(setq calendar-week-start-day 1)
 (setq custom-file
       (expand-file-name (format "emacs-custom-%s.el" (user-uid))
 			temporary-file-directory))
