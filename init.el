@@ -1,6 +1,8 @@
+;;; package --- Summary
 ;;; Commentary:
 
 ;;; Table of contents
+;;   0. Non NixOS specific
 ;;   1. Prerequisites
 ;;   2. Visual settings
 ;;   3. Base settings
@@ -9,9 +11,11 @@
 ;;   6. Programming languages
 ;;   7. Applications and utilities
 
+
+;;; Code:
 
 ;;; --------------------------------------------------------------------
-;;; 1. Prerequisites
+;;; 0. Non NixOS specific
 ;;; --------------------------------------------------------------------
 
 ;; Setup package archives
@@ -26,6 +30,13 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
+
+
+;;; --------------------------------------------------------------------
+;;; 1. Prerequisites
+;;; --------------------------------------------------------------------
+
+;; Setup use-package
 (eval-and-compile
   (setq use-package-enable-imenu-support t)
   (setq use-package-hook-name-suffix nil))
@@ -61,19 +72,26 @@
   (setq inhibit-startup-screen t)
   (blink-cursor-mode -1))
 
+;; Font configuration
+(use-package emacs
+  :config
+  (add-to-list 'default-frame-alist '(font . "Hack 12")))
+
+;; Theme
 (use-package modus-operandi-theme
   :demand t
   :ensure)
 (use-package modus-vivendi-theme
   :demand t
   :ensure)
-
+(use-package solar
+  :config
+  (setq calendar-latitude 51.508530)
+  (setq calendar-longitude -0.076132))
 (use-package emacs
   :after (modus-operandi-theme modus-vivendi-theme)
   :init
   (setq custom-safe-themes t)
-  (setq calendar-latitude 51.508530)
-  (setq calendar-longitude -0.076132)
   ;; Light at sunrise
   (run-at-time (nth 1 (split-string (sunrise-sunset)))
                (* 60 60 24)
@@ -91,32 +109,37 @@
 
 (use-package emacs
   :config
+  (setq-default fill-column 72)
   (setq-default tab-always-indent 'complete)
+  (setq-default tab-width 4)
   (setq-default indent-tabs-mode nil)
-  (setq backup-directory-alist
-        `(("." . ,(expand-file-name "backups" user-emacs-directory))))
+  (setq auto-save-default nil)
+  (setq auto-save-list-file-prefix nil)
+  (setq column-number-mode t)
   (setq create-lockfiles nil)
   (setq custom-file
       (expand-file-name (format "emacs-custom-%s.el" (user-uid))
                         temporary-file-directory))
-  (setq initial-scratch-message (format ";; Scratch - Started on %s\n\n"
-                                        (current-time-string)))
+  (setq mode-require-final-newline 'visit-save)
   (setq scroll-conservatively 1)
   (setq scroll-error-top-bottom t)
   (setq scroll-margin 0)
   (setq scroll-preserve-screen-position t)
   (setq select-enable-primary t)
+  (fset 'display-startup-echo-area-message 'ignore)
   (defalias 'yes-or-no-p 'y-or-n-p)
   :hook ((before-save-hook . whitespace-cleanup)
          (before-save-hook . (lambda () (delete-trailing-whitespace)))))
 
-;; Recentf
-(use-package recentf
+;; Backups
+(use-package emacs
   :config
-  (setq recentf-max-menu-items 25)
-  (setq recentf-max-saved-items 25)
-  :hook (after-init-hook . recentf-mode)
-  :bind ("C-x C-r" . recentf-open-files))
+  (setq backup-directory-alist
+        `(("." . ,(expand-file-name "backups" user-emacs-directory))))
+  (setq backup-by-copying t)
+  (setq version-control t)
+  (setq delete-old-versions t)
+  (setq kept-new-versions 6))
 
 ;; Record cursor position
 (use-package saveplace
@@ -129,8 +152,16 @@
   (setq mouse-wheel-scroll-amount
         '(1
           ((shift) . 5)
-          ((control) . text-scale)))
-  :hook (after-init-hook . mouse-wheel-mode))
+          ((control) . text-scale))))
+
+;; Autorevert
+(use-package autorevert
+  :hook (after-init-hook . global-auto-revert-mode))
+
+;; Bookmarks
+(use-package bookmark
+  :config
+  (setq bookmark-save-flag 1))
 
 ;; Winner mode
 (use-package winner
@@ -138,35 +169,98 @@
   :bind (("C->" . winner-redo)
          ("C-<" . winner-undo)))
 
+;; Expand Region
+(use-package expand-region
+  :ensure
+  :config
+  (setq expand-region-smart-cursor t)
+  :bind (("C-=" . er/expand-region)
+         ("C-M-=" . er/mark-outside-pairs)
+         ("C-+" . er/mark-symbol)))
+
+;; Delete selection
+(use-package delsel
+  :hook (after-init-hook . delete-selection-mode))
+
+;; Scratch
+(use-package emacs
+  :config
+  (setq initial-scratch-message (format ";; Scratch - Started on %s\n\n"
+                                        (current-time-string))))
+(use-package scratch
+  :ensure
+  :config
+  (defun dnixty/scratch-buffer-setup ()
+    (let* ((mode (format "%s" major-mode))
+           (string (concat "Scratch buffer for: " mode "\n\n")))
+      (when scratch-buffer
+        (save-excursion
+          (insert string)
+          (goto-char (point-min))
+          (comment-region (point-at-bol) (point-at-eol)))
+        (next-line 2))
+      (rename-buffer (concat "*Scratch for " mode "*") t)))
+  :hook (scratch-create-buffer-hook . dnixty/scratch-buffer-setup)
+  :bind ("C-c s" . scratch))
+
+;; Parentheses
+(use-package paren
+  :hook (after-init-hook . show-paren-mode))
+
+;; Repeat
+(use-package repeat
+  :config
+  (setq repeat-on-final-keystroke t))
+
 
 
 ;;; --------------------------------------------------------------------
 ;;; 4. Selection narrowing and search
 ;;; --------------------------------------------------------------------
 
-
+;; Minibuffer
 (use-package minibuffer
   :config
+  (setq completion-styles
+        '(basic partial-completion substring))
+  (setq completion-category-defaults nil)
+  (setq completion-cycle-threshold 3)
+  (setq completion-pcm-complete-word-inserts-delimiters t)
   (setq completion-ignore-case t)
   (setq completion-show-help nil)
+  (setq completions-format 'vertical)
   (setq read-buffer-completion-ignore-case t)
   (setq read-file-name-completion-ignore-case t)
-  (setq resize-mini-windows t))
-
-;; Minibuffer history
+  (setq enable-recursive-minibuffers t)
+  (setq resize-mini-windows t)
+  (minibuffer-depth-indicate-mode 1)
+  (minibuffer-electric-default-mode 1))
 (use-package savehist
   :config
-  (setq history-length 30000)
+  (setq history-length 1000)
+  (setq history-delete-duplicates t)
   (savehist-mode 1))
 
+;; Icomplete
 (use-package icomplete
   :demand
   :after minibuffer
   :config
+  (setq icomplete-delay-completions-threshold 100)
+  (setq icomplete-max-delay-chars 2)
+  (setq icomplete-show-matches-on-no-input t)
   (setq icomplete-hide-common-prefix nil)
+  (setq icomplete-separator (propertize " · " 'face 'shadow))
+  (setq icomplete-show-matches-on-no-input nil)
   (setq icomplete-prospects-height 1)
-  (fido-mode -1)
+  (setq icomplete-in-buffer t)
+  (setq icomplete-tidy-shadowed-file-names t)
+  (defun dnixty/icomplete-minibuffer-truncate ()
+    (when (and (minibufferp)
+               (bound-and-true-p icomplete-mode))
+      (setq truncate-lines t)))
   (icomplete-mode 1)
+  :hook (icomplete-minibuffer-setup-hook . dnixty/icomplete-minibuffer-truncate)
   :bind (:map icomplete-minibuffer-map
               ("<tab>" . icomplete-force-complete)
               ("<return>" . icomplete-force-complete-and-exit)
@@ -174,11 +268,12 @@
               ("C-p" . icomplete-backward-completions)
               ("C-l" . icomplete-fido-backward-updir)
               ("C-j" . exit-minibuffer)))
-
 (use-package icomplete-vertical
   :ensure
   :demand
+  :after (minibuffer icomplete)
   :config
+  (setq icomplete-vertical-prospects-height (/ (frame-height) 6))
   (defun dps/icomplete-yank-kill-ring ()
     (interactive)
     (let ((kills
@@ -193,14 +288,91 @@
           (delete-region (region-beginning) (region-end)))
         (insert
          (completing-read "Yank from kill ring: " kills nil t)))))
-  :bind (("M-y" . dps/icomplete-yank-kill-ring)))
+  :bind (("M-y" . dps/icomplete-yank-kill-ring)
+         :map icomplete-minibuffer-map
+         ("C-v" . icomplete-vertical-toggle)))
 
+;; In-buffer completions
+(use-package emacs
+  :config
+  (defun contrib/completing-read-in-region (start end collection &optional predicate)
+    "Prompt for completion of region in the minibuffer if non-unique.
+Use as a value for `completion-in-region-function'."
+    (if (and (minibufferp) (not (string= (minibuffer-prompt) "Eval: ")))
+        (completion--in-region start end collection predicate)
+      (let* ((initial (buffer-substring-no-properties start end))
+             (limit (car (completion-boundaries initial collection predicate "")))
+             (all (completion-all-completions initial collection predicate
+                                              (length initial)))
+             (completion (cond
+                          ((atom all) nil)
+                          ((and (consp all) (atom (cdr all)))
+                           (concat (substring initial 0 limit) (car all)))
+                          (t (completing-read
+                              "Completion: " collection predicate t initial)))))
+        (if (null completion)
+            (progn (message "No completion") nil)
+          (delete-region start end)
+          (insert completion)
+          t))))
+  (setq completion-in-region-function #'contrib/completing-read-in-region)
+  :bind (:map minibuffer-local-completion-map
+              ("<tab>" . minibuffer-force-complete)))
+
+;; Projects
+(use-package projectile
+  :ensure
+  :config
+  (setq projectile-completion-system 'default)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (projectile-mode))
+
+;; Dabbrev
+(use-package dabbrev
+  :after (minibuffer icomplete icomplete-vertical)
+  :config
+  (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
+  (setq dabbrev-case-fold-search t)
+  (setq dabbrev-eliminate-newlines nil)
+  (setq dabbrev-upcase-means-case-search t)
+  :bind (("C-M-/" . dabbrev-completion)))
+
+;; Recentf
+(use-package recentf
+  :config
+  (setq recentf-max-saved-items 200)
+  (setq recentf-exclude '(".gz" ".xz" ".zip" "/elpa/" "/ssh:" "/sudo:"))
+  (defun dnixty/recentf-keep-predicate (file)
+    (cond
+     ((file-directory-p file) (file-readable-p file))))
+  (add-to-list 'recentf-keep 'dnixty/recentf-keep-default-predicate)
+
+  (defun dnixty/recentf (&optional input)
+    (interactive)
+    (let* ((files (mapcar 'abbreviate-file-name recentf-list))
+           (f (icomplete-vertical-do ()
+                (completing-read "Open recentf entry: " files nil t
+                                 (when input input)))))
+      (find-file f)))
+  :hook (after-init-hook . recentf-mode)
+  :bind ("C-x C-r" . dnixty/recentf))
+
+;; Ibuffer
 (use-package ibuffer
   :config
+  (setq ibuffer-expert t)
   (setq ibuffer-display-summary nil)
-  (setq ibuffer-show-empty-filter-groups nil)
+  :hook (ibuffer-mode-hook . hl-line-mode)
   :bind ("C-x C-b" . ibuffer))
+(use-package ibuf-ext
+  :config
+  (setq ibuffer-show-empty-filter-groups nil))
+(use-package ibuffer-vc
+  :ensure
+  :after (ibuffer vc)
+  :hook (ibuffer-hook . ibuffer-vc-set-filter-groups-by-vc-root))
 
+;; Isearch
 (use-package isearch
   :config
   (setq search-whitespace-regexp ".*?")
@@ -214,30 +386,38 @@
   :ensure
   :defer
   :config
-  (rg-define-search
-   dps/rg-vc-or-dir
-   "RipGrep in project root or present directory."
-   :query ask
-   :format regexp
-   :files "everything"
-   :dir (let ((vc (vc-root-dir)))
-          (if vc
-              vc
-            default-directory))
-   :confirm prefix
-   :flags ("--hidden -g !.git"))
-  (rg-define-search
-   dps/rg-ref-in-dir
-   "RipGrep for thing at point in present directory."
-   :query point
-   :format regexp
-   :files "everything"
-   :dir default-directory
-   :confirm prefix
-   :flags ("--hidden -g !.git"))
+  (rg-define-search dnixty/rg-vc-or-dir
+    "RipGrep in project root or present directory."
+    :query ask
+    :format regexp
+    :files "everything"
+    :dir (or (vc-root-dir)
+             default-directory)
+    :confirm prefix
+    :flags ("--hidden -g !.git"))
+  (rg-define-search dnixty/rg-ref-in-dir
+    "RipGrep for thing at point in present directory."
+    :query point
+    :format regexp
+    :files "everything"
+    :dir default-directory
+    :confirm prefix
+    :flags ("--hidden -g !.git"))
+  :bind (("C-c g" . dnixty/rg-vc-or-dir)
+         ("C-c r" . dnixty/rg-ref-in-dir)
+         :map rg-mode-map
+         ("C-n" . next-line)
+         ("C-p" . previous-line)
+         ("M-n" . rg-next-file)
+         ("M-p" . rg-prev-file)))
 
-  :bind (("C-c g" . dps/rg-vc-or-dir)
-         ("C-C r" . dps/rg-ref-in-dir)))
+;; Wgrep
+(use-package wgrep
+  :ensure
+  :commands wgrep
+  :config
+  (setq wgrep-auto-save-buffer 1)
+  (setq wgrep-change-readonly-file t))
 
 
 
@@ -248,6 +428,7 @@
 (use-package emacs
   :bind (("C-h" . delete-backward-char)
          ("C-x k" . kill-this-buffer)
+         ("M-z" . zap-up-to-char)
          ("M-;" . comment-line)
          ("C-," . previous-buffer)
          ("C-." . next-buffer)
@@ -259,6 +440,19 @@
 ;;; 6. Programming
 ;;; --------------------------------------------------------------------
 
+;; Lsp
+(use-package lsp-mode
+  :ensure
+  :commands (lsp lsp-deferred)
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  :config
+  (setq lsp-enable-symbol-highlighting nil)
+  (setq lsp-enable-snippet nil)
+  (setq lsp-restart 'auto-restart)
+  :hook (js-mode-hook . lsp-deferred))
+
+
 ;; Javascript
 (use-package js
   :config
@@ -266,15 +460,6 @@
 (use-package add-node-modules-path
   :ensure
   :hook (js-mode-hook . add-node-modules-path))
-(use-package tide
-  :ensure
-  :mode ("\\.tsx?\\'" . typescript-mode)
-  :hook ((typescript-mode-hook . tide-setup)
-         (typescript-mode-hook . flycheck-mode)
-         (typescript-mode-hook . tide-hl-identifier-mode)))
-(use-package flow-minor-mode
-  :ensure
-  :hook (js-mode-hook . flow-minor-enable-automatically))
 
 ;; Haskell
 (use-package haskell-mode
@@ -295,20 +480,25 @@
   :bind ("C-c v" . magit))
 
 ;; Flycheck
-(use-package flycheck-flow
-  :ensure)
 (use-package flycheck
   :ensure
   :config
-  ;; (flycheck-add-mode 'javascript-eslint 'js-mode)
-  (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
-  (flycheck-add-mode 'javascript-flow 'flow-minor-mode)
-  (flycheck-add-next-checker 'javascript-flow 'javascript-eslint)
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (setq-default flycheck-disabled-checkers
-                (append flycheck-disabled-checkers
-                        '(javascript-jshint)))
-  :init (global-flycheck-mode))
+  :hook (prog-mode-hook . flycheck-mode))
+
+;; Subword
+(use-package subword
+  :diminish
+  :hook (prog-mode-hook . subword-mode))
+
+;; Rainbow Mode
+(use-package rainbow-mode
+  :ensure)
+
+;; Highlight TODO
+(use-package hl-todo
+  :ensure
+  :hook (prog-mode-hook . hl-todo-mode))
 
 
 
@@ -337,9 +527,4 @@
               ("C-l" . dired-up-directory)))
 (use-package dired-x)
 
-;; OpenBSD
-;; (setq dired-listing-switches "-AFhl")
-;; (setq ls-lisp-use-insert-directory-program nil)
-;; (setq ring-bell-function 'ignore)
-;; (setq vc-follow-symlinks t)
-;; (require 'ls-lisp)
+;;; init.el ends here
