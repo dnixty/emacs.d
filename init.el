@@ -15,24 +15,6 @@
 ;;; Code:
 
 ;;; --------------------------------------------------------------------
-;;; 0. Non NixOS specific
-;;; --------------------------------------------------------------------
-
-;; Setup package archives
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-;; Setup use-package
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-
-;;; --------------------------------------------------------------------
 ;;; 1. Prerequisites
 ;;; --------------------------------------------------------------------
 
@@ -50,7 +32,6 @@
 
 ;; Make Emacs use shell $PATH
 (use-package exec-path-from-shell
-  :ensure
   :config
   (when (memq window-system '(mac ns x))
     (setq exec-path-from-shell-check-startup-files nil)
@@ -75,15 +56,13 @@
 ;; Font configuration
 (use-package emacs
   :config
-  (add-to-list 'default-frame-alist '(font . "Hack 12")))
+  (add-to-list 'default-frame-alist '(font . "Hack 11")))
 
 ;; Theme
 (use-package modus-operandi-theme
-  :demand t
-  :ensure)
+  :demand)
 (use-package modus-vivendi-theme
-  :demand t
-  :ensure)
+  :demand)
 (use-package solar
   :config
   (setq calendar-latitude 51.508530)
@@ -99,7 +78,9 @@
   ;; Dark at sunset
   (run-at-time (nth 4 (split-string (sunrise-sunset)))
                (* 60 60 24)
-               (lambda () (enable-theme 'modus-vivendi))))
+               (lambda () (enable-theme 'modus-vivendi)))
+  :config
+  (enable-theme 'modus-operandi))
 
 
 
@@ -171,7 +152,6 @@
 
 ;; Expand Region
 (use-package expand-region
-  :ensure
   :config
   (setq expand-region-smart-cursor t)
   :bind (("C-=" . er/expand-region)
@@ -188,7 +168,6 @@
   (setq initial-scratch-message (format ";; Scratch - Started on %s\n\n"
                                         (current-time-string))))
 (use-package scratch
-  :ensure
   :config
   (defun dnixty/scratch-buffer-setup ()
     (let* ((mode (format "%s" major-mode))
@@ -221,8 +200,19 @@
 ;; Minibuffer
 (use-package minibuffer
   :config
+  (use-package orderless
+    :config
+    (setq orderless-component-separator " +")
+    (setq orderless-matching-styles
+          '(orderless-flex
+            orderless-strict-leading-initialism
+            orderless-regexp
+            orderless-prefixes
+            orderless-literal))
+    :bind (:map minibuffer-local-completion-map
+               ("SPC" . nil)))
   (setq completion-styles
-        '(basic partial-completion substring))
+        '(orderless partial-completion))
   (setq completion-category-defaults nil)
   (setq completion-cycle-threshold 3)
   (setq completion-pcm-complete-word-inserts-delimiters t)
@@ -269,7 +259,6 @@
               ("C-l" . icomplete-fido-backward-updir)
               ("C-j" . exit-minibuffer)))
 (use-package icomplete-vertical
-  :ensure
   :demand
   :after (minibuffer icomplete)
   :config
@@ -321,7 +310,6 @@ Use as a value for `completion-in-region-function'."
 
 ;; Projects
 (use-package projectile
-  :ensure
   :config
   (setq projectile-completion-system 'default)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -368,7 +356,6 @@ Use as a value for `completion-in-region-function'."
   :config
   (setq ibuffer-show-empty-filter-groups nil))
 (use-package ibuffer-vc
-  :ensure
   :after (ibuffer vc)
   :hook (ibuffer-hook . ibuffer-vc-set-filter-groups-by-vc-root))
 
@@ -383,7 +370,6 @@ Use as a value for `completion-in-region-function'."
   (setq isearch-allow-scroll 'unlimited))
 
 (use-package rg
-  :ensure
   :defer
   :config
   (rg-define-search dnixty/rg-vc-or-dir
@@ -413,7 +399,6 @@ Use as a value for `completion-in-region-function'."
 
 ;; Wgrep
 (use-package wgrep
-  :ensure
   :commands wgrep
   :config
   (setq wgrep-auto-save-buffer 1)
@@ -440,49 +425,54 @@ Use as a value for `completion-in-region-function'."
 ;;; 6. Programming
 ;;; --------------------------------------------------------------------
 
+;; Direnv
+(use-package direnv
+  :config
+  (direnv-mode)
+  :hook (prog-mode-hook . direnv-update-environment))
+
 ;; Lsp
 (use-package lsp-mode
-  :ensure
+  :after (direnv)
   :commands (lsp lsp-deferred)
   :init
   (setq lsp-keymap-prefix "C-c l")
   :config
   (setq lsp-enable-symbol-highlighting nil)
   (setq lsp-enable-snippet nil)
-  (setq lsp-restart 'auto-restart)
   :hook (js-mode-hook . lsp-deferred))
-
 
 ;; Javascript
 (use-package js
+  :after lsp-mode
   :config
   (setq js-indent-level 2))
 (use-package add-node-modules-path
-  :ensure
   :hook (js-mode-hook . add-node-modules-path))
 
 ;; Haskell
-(use-package haskell-mode
-  :ensure)
+(use-package haskell-mode)
+
+;; Nix
+(use-package nix-mode)
 
 ;; Diff-hl
 (use-package diff-hl
-  :ensure
   :config
   (setq diff-hl-draw-borders nil)
   :hook (after-init-hook . global-diff-hl-mode))
 
 ;; Magit
 (use-package magit
-  :ensure
   :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
          (magit-post-refresh-hook . diff-hl-magit-post-refresh))
   :bind ("C-c v" . magit))
 
 ;; Flycheck
 (use-package flycheck
-  :ensure
+  :after lsp-mode
   :config
+  (flycheck-add-next-checker 'lsp 'javascript-eslint)
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   :hook (prog-mode-hook . flycheck-mode))
 
@@ -492,12 +482,10 @@ Use as a value for `completion-in-region-function'."
   :hook (prog-mode-hook . subword-mode))
 
 ;; Rainbow Mode
-(use-package rainbow-mode
-  :ensure)
+(use-package rainbow-mode)
 
 ;; Highlight TODO
 (use-package hl-todo
-  :ensure
   :hook (prog-mode-hook . hl-todo-mode))
 
 
@@ -526,5 +514,26 @@ Use as a value for `completion-in-region-function'."
   :bind (:map dired-mode-map
               ("C-l" . dired-up-directory)))
 (use-package dired-x)
+
+;; Elfeed
+
+(use-package elfeed
+  :config
+  (setq elfeed-db-directory (expand-file-name "elfeed" user-emacs-directory))
+  (defun dnixty/elfeed-feeds ()
+    (let ((feeds "~/documents/blogroll.el"))
+      (if (file-exists-p feeds)
+          (load-file feeds)
+        (user-error "Missing feeds' file"))))
+  :hook (elfeed-search-mode-hook . dnixty/elfeed-feeds)
+  :bind (("C-c f" . elfeed)
+         :map elfeed-search-mode-map
+         ("g" . elfeed-update)
+         ("G" . elfeed-search-update--force)))
+
+
+;; Ledger
+(use-package ledger-mode
+  :mode "\\.ldg\\'")
 
 ;;; init.el ends here
