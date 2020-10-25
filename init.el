@@ -2,7 +2,6 @@
 ;;; Commentary:
 
 ;;; Table of contents
-;;   0. Non NixOS specific
 ;;   1. Prerequisites
 ;;   2. Visual settings
 ;;   3. Base settings
