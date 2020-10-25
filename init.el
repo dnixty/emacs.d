@@ -513,6 +513,10 @@ Use as a value for `completion-in-region-function'."
   :bind (:map dired-mode-map
               ("C-l" . dired-up-directory)))
 (use-package dired-x)
+(use-package wdired
+  :commands wdired-change-to-wdired-mode
+  :config
+  (setq wdired-allow-to-change-permissions t))
 
 ;; Elfeed
 
