@@ -190,6 +190,32 @@
   :config
   (setq repeat-on-final-keystroke t))
 
+;; Tabs
+(use-package tab-bar
+  :config
+  (setq tab-bar-close-button-show nil)
+  (setq tab-bar-close-last-tab-choice 'tab-bar-mode-disable)
+  (setq tab-bar-show nil)
+  (setq tab-bar-tab-name-function 'tab-bar-tab-name-all)
+
+  (tab-bar-mode -1)
+  (tab-bar-history-mode -1)
+  (defun dnixty/tab-bar-select-tab-dwim ()
+    (interactive)
+    (let ((tabs (mapcar (lambda (tab)
+                          (alist-get 'name tab))
+                        (tab-bar--tabs-recent))))
+      (cond ((eq tabs nil)
+             (tab-new))
+            ((eq (length tabs) 1)
+             (tab-next))
+            (t
+             (icomplete-vertical-do ()
+               (tab-bar-switch-to-tab
+                (completing-read "Select tab: " tabs nil t)))))))
+  :bind (("C-x t t" . dnixty/tab-bar-select-tab-dwim)
+         ("C-x t ," . tab-next)
+         ("C-x t ." . tab-previous)))
 
 
 ;;; --------------------------------------------------------------------
