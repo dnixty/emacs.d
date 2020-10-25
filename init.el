@@ -80,7 +80,7 @@
                (lambda () (enable-theme 'modus-vivendi)))
   :config
   (enable-theme 'modus-operandi))
-
+(use-package diminish)
 
 
 ;;; --------------------------------------------------------------------
@@ -309,6 +309,7 @@ Use as a value for `completion-in-region-function'."
 
 ;; Projects
 (use-package projectile
+  :diminish
   :config
   (setq projectile-completion-system 'default)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
