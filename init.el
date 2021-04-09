@@ -62,7 +62,22 @@
 ;; Base typeface configurations
 (use-package emacs
   :config
-  (add-to-list 'default-frame-alist '(font . "Hack 11")))
+  (defun dnixty/laptop-font ()
+    "Font for the small laptop screen."
+    (interactive)
+    (when window-system
+      (set-face-attribute 'default nil :family "Hack" :height 110)))
+  (defun dnixty/desktop-font ()
+    "Font for the larger desktop screen."
+    (interactive)
+    (when window-system
+      (set-face-attribute 'default nil :family "Hack" :height 140)))
+  (defun dnixty/set-font ()
+    (when window-system
+      (if (<= (display-pixel-width) 1366)
+          (dnixty/laptop-font)
+        (dnixty/desktop-font))))
+  :hook (window-setup-hook . dnixty/set-font))
 
 ;; Theme
 (use-package modus-themes
