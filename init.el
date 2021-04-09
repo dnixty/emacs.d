@@ -471,6 +471,11 @@ Use as a value for `completion-in-region-function'."
   :ensure
   :hook (js-mode-hook . add-node-modules-path))
 
+;; C
+(use-package cc-vars
+  :config
+  (setq-default c-basic-offset 4))
+
 ;; Diff-hl
 (use-package diff-hl
   :ensure
