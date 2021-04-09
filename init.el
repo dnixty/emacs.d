@@ -54,7 +54,12 @@
 ;;; 2. Visual settings
 ;;; --------------------------------------------------------------------
 
-;; Font configuration
+
+;; Set default frame size
+(if (display-graphic-p)
+      (setq initial-frame-alist '((width . 106) (height . 60))))
+
+;; Base typeface configurations
 (use-package emacs
   :config
   (add-to-list 'default-frame-alist '(font . "Hack 11")))
