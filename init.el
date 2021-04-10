@@ -416,7 +416,7 @@ repository, then the corresponding root is used instead."
   (setq swiper-action-recenter t)
   (setq swiper-goto-start-of-match t)
   (setq swiper-include-line-number-in-search t)
-  :bind (("C-s" . swiper)
+  :bind (("C-S-s" . swiper)
          ("M-s s" . swiper-multi)
          ("M-s w" . swiper-thing-at-point)
          :map swiper-map
