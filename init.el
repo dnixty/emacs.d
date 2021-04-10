@@ -386,6 +386,7 @@ repository, then the corresponding root is used instead."
          ("M-s l" . counsel-find-library)
          ("M-s z" . dps/counsel-fzf-rg-files)
          :map ivy-minibuffer-map
+         ("C-l" . counsel-up-directory)
          ("C-r" . counsel-minibuffer-history)
          ("C-SPC" . ivy-restrict-to-matches)))
 
@@ -432,6 +433,7 @@ repository, then the corresponding root is used instead."
 
 (use-package ivy-posframe
   :ensure t
+  :after ivy
   :diminish
   :config
   (setq ivy-posframe-parameters
