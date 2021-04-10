@@ -227,9 +227,19 @@
              (tab-next))
             (t
              (icomplete-vertical-do ()
-               (tab-bar-switch-to-tab
-                (completing-read "Select tab: " tabs nil t)))))))
-  :bind (("C-x t t" . dnixty/tab-bar-select-tab-dwim)
+                                    (tab-bar-switch-to-tab
+                                     (completing-read "Select tab: " tabs nil t)))))))
+  (defun dps/tab-bar-toggle ()
+    "Toggle `tab-bar' presentation."
+    (interactive)
+    (if (bound-and-true-p tab-bar-mode)
+        (progn
+          (setq tab-bar-show nil)
+          (tab-bar-mode -1))
+      (setq tab-bar-show t)
+      (tab-bar-mode 1)))
+  :bind (("<f8>" . dps/tab-bar-toggle)
+         ("C-x t t" . dps/tab-bar-select-tab-dwim)
          ("C-x t ," . tab-next)
          ("C-x t ." . tab-previous)))
 
