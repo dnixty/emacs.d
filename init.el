@@ -545,10 +545,6 @@ repository, then the corresponding root is used instead."
   :diminish
   :hook (prog-mode-hook . subword-mode))
 
-;; Rainbow Mode
-(use-package rainbow-mode
-  :ensure)
-
 ;; Highlight TODO
 (use-package hl-todo
   :ensure
