@@ -474,6 +474,12 @@ repository, then the corresponding root is used instead."
   (setq isearch-yank-on-move 'shift)
   (setq isearch-allow-scroll 'unlimited))
 
+(use-package wgrep
+  :ensure
+  :commands wgrep
+  :config
+  (setq wgrep-auto-save-buffer 1)
+  (setq wgrep-change-readonly-file t))
 
 ;;; --------------------------------------------------------------------
 ;;; 5. Aliases and custom commands
