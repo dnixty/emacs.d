@@ -62,22 +62,22 @@
 ;; Base typeface configurations
 (use-package emacs
   :config
-  (defun dnixty/laptop-font ()
+  (defun dps/laptop-font ()
     "Font for the small laptop screen."
     (interactive)
     (when window-system
       (set-face-attribute 'default nil :family "Hack" :height 110)))
-  (defun dnixty/desktop-font ()
+  (defun dps/desktop-font ()
     "Font for the larger desktop screen."
     (interactive)
     (when window-system
       (set-face-attribute 'default nil :family "Hack" :height 140)))
-  (defun dnixty/set-font ()
+  (defun dps/set-font ()
     (when window-system
       (if (<= (display-pixel-width) 1366)
-          (dnixty/laptop-font)
-        (dnixty/desktop-font))))
-  :hook (window-setup-hook . dnixty/set-font))
+          (dps/laptop-font)
+        (dps/desktop-font))))
+  :hook (window-setup-hook . dps/set-font))
 
 ;; Theme
 (use-package modus-themes
@@ -184,7 +184,7 @@
 (use-package scratch
   :ensure
   :config
-  (defun dnixty/scratch-buffer-setup ()
+  (defun dps/scratch-buffer-setup ()
     (let* ((mode (format "%s" major-mode))
            (string (concat "Scratch buffer for: " mode "\n\n")))
       (when scratch-buffer
@@ -194,7 +194,7 @@
           (comment-region (point-at-bol) (point-at-eol)))
         (next-line 2))
       (rename-buffer (concat "*Scratch for " mode "*") t)))
-  :hook (scratch-create-buffer-hook . dnixty/scratch-buffer-setup)
+  :hook (scratch-create-buffer-hook . dps/scratch-buffer-setup)
   :bind ("C-c s" . scratch))
 
 ;; Parentheses
@@ -216,7 +216,7 @@
 
   (tab-bar-mode -1)
   (tab-bar-history-mode -1)
-  (defun dnixty/tab-bar-select-tab-dwim ()
+  (defun dps/tab-bar-select-tab-dwim ()
     (interactive)
     (let ((tabs (mapcar (lambda (tab)
                           (alist-get 'name tab))
