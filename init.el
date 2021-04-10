@@ -55,9 +55,9 @@
 ;;; --------------------------------------------------------------------
 
 
-;; Set default frame size
-(if (display-graphic-p)
-      (setq initial-frame-alist '((width . 106) (height . 60))))
+;; Make the frame larger on desktop
+(if (and window-system (> (display-pixel-width) 1366))
+    (setq initial-frame-alist '((width . 106) (height . 60))))
 
 ;; Base typeface configurations
 (use-package emacs
@@ -233,162 +233,211 @@
          ("C-x t ," . tab-next)
          ("C-x t ." . tab-previous)))
 
+(use-package eldoc
+  :diminish)
+
 
 ;;; --------------------------------------------------------------------
 ;;; 4. Selection narrowing and search
 ;;; --------------------------------------------------------------------
 
-;; Minibuffer
-(use-package minibuffer
-  :config
-  (use-package orderless
-    :ensure
-    :config
-    (setq orderless-component-separator " +")
-    (setq orderless-matching-styles
-          '(orderless-flex
-            orderless-strict-leading-initialism
-            orderless-regexp
-            orderless-prefixes
-            orderless-literal))
-    :bind (:map minibuffer-local-completion-map
-               ("SPC" . nil)))
-  (setq completion-styles
-        '(orderless partial-completion))
-  (setq completion-category-defaults nil)
-  (setq completion-cycle-threshold 3)
-  (setq completion-pcm-complete-word-inserts-delimiters t)
-  (setq completion-ignore-case t)
-  (setq completion-show-help nil)
-  (setq completions-format 'vertical)
-  (setq read-buffer-completion-ignore-case t)
-  (setq read-file-name-completion-ignore-case t)
-  (setq enable-recursive-minibuffers t)
-  (setq resize-mini-windows t)
-  (minibuffer-depth-indicate-mode 1)
-  (minibuffer-electric-default-mode 1))
-(use-package savehist
-  :config
-  (setq history-length 1000)
-  (setq history-delete-duplicates t)
-  (savehist-mode 1))
 
-;; Icomplete
-(use-package icomplete
-  :demand
-  :after minibuffer
-  :config
-  (setq icomplete-delay-completions-threshold 100)
-  (setq icomplete-max-delay-chars 2)
-  (setq icomplete-show-matches-on-no-input t)
-  (setq icomplete-hide-common-prefix nil)
-  (setq icomplete-separator (propertize " · " 'face 'shadow))
-  (setq icomplete-show-matches-on-no-input nil)
-  (setq icomplete-prospects-height 1)
-  (setq icomplete-in-buffer t)
-  (setq icomplete-tidy-shadowed-file-names t)
-  (defun dnixty/icomplete-minibuffer-truncate ()
-    (when (and (minibufferp)
-               (bound-and-true-p icomplete-mode))
-      (setq truncate-lines t)))
-  (icomplete-mode 1)
-  :hook (icomplete-minibuffer-setup-hook . dnixty/icomplete-minibuffer-truncate)
-  :bind (:map icomplete-minibuffer-map
-              ("<tab>" . icomplete-force-complete)
-              ("<return>" . icomplete-force-complete-and-exit)
-              ("C-n" . icomplete-forward-completions)
-              ("C-p" . icomplete-backward-completions)
-              ("C-l" . icomplete-fido-backward-updir)
-              ("C-j" . exit-minibuffer)))
-(use-package icomplete-vertical
-  :ensure
-  :demand
-  :after (minibuffer icomplete)
-  :config
-  (setq icomplete-vertical-prospects-height (/ (frame-height) 6))
-  (defun dps/icomplete-yank-kill-ring ()
-    (interactive)
-    (let ((kills
-           (lambda (string pred action)
-             (if (eq action 'metadata)
-                 '(metadata (display-sort-function . identity)
-                            (cycle-sort-function . identity))
-               (complete-with-action
-                action kill-ring string pred)))))
-      (icomplete-vertical-do (:separator 'dotted-line)
-        (when (use-region-p)
-          (delete-region (region-beginning) (region-end)))
-        (insert
-         (completing-read "Yank from kill ring: " kills nil t)))))
-  :bind (("M-y" . dps/icomplete-yank-kill-ring)
-         :map icomplete-minibuffer-map
-         ("C-v" . icomplete-vertical-toggle)))
-
-;; In-buffer completions
-(use-package emacs
-  :config
-  (defun contrib/completing-read-in-region (start end collection &optional predicate)
-    "Prompt for completion of region in the minibuffer if non-unique.
-Use as a value for `completion-in-region-function'."
-    (if (and (minibufferp) (not (string= (minibuffer-prompt) "Eval: ")))
-        (completion--in-region start end collection predicate)
-      (let* ((initial (buffer-substring-no-properties start end))
-             (limit (car (completion-boundaries initial collection predicate "")))
-             (all (completion-all-completions initial collection predicate
-                                              (length initial)))
-             (completion (cond
-                          ((atom all) nil)
-                          ((and (consp all) (atom (cdr all)))
-                           (concat (substring initial 0 limit) (car all)))
-                          (t (completing-read
-                              "Completion: " collection predicate t initial)))))
-        (if (null completion)
-            (progn (message "No completion") nil)
-          (delete-region start end)
-          (insert completion)
-          t))))
-  (setq completion-in-region-function #'contrib/completing-read-in-region)
-  :bind (:map minibuffer-local-completion-map
-              ("<tab>" . minibuffer-force-complete)))
-
-;; Projects
-(use-package projectile
-  :ensure
+(use-package ivy
+  :ensure t
   :diminish
   :config
-  (setq projectile-completion-system 'default)
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  (projectile-mode))
+  (setq ivy-count-format "(%d/%d) ")
+  (setq ivy-height-alist '((t lambda (_caller) (/ (window-height) 4))))
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-re-builders-alist
+        '((counsel-M-x . ivy--regex-fuzzy)
+          (ivy-switch-buffer . ivy--regex-fuzzy)
+          (ivy-switch-buffer-other-window . ivy--regex-fuzzy)
+          (counsel-rg . ivy--regex-or-literal)
+          (t . ivy--regex-plus)))
+  (setq ivy-use-selectable-prompt t)
+  (setq ivy-initial-inputs-alist
+        '((counsel-M-x . "^")
+          (ivy-switch-buffer . "^")
+          (ivy-switch-buffer-other-window . "^")
+          (counsel-describe-function . "^")
+          (counsel-describe-variable . "^")
+          (t . "")))
 
-;; Dabbrev
-(use-package dabbrev
-  :after (minibuffer icomplete icomplete-vertical)
+  (ivy-set-occur 'counsel-fzf 'counsel-fzf-occur)
+  (ivy-set-occur 'counsel-rg 'counsel-ag-occur)
+  (ivy-set-occur 'ivy-switch-buffer 'ivy-switch-buffer-occur)
+  (ivy-set-occur 'swiper 'swiper-occur)
+  (ivy-set-occur 'swiper-isearch 'swiper-occur)
+  (ivy-set-occur 'swiper-multi 'counsel-ag-occur)
+  :hook ((after-init-hook . ivy-mode)
+         (ivy-occur-mode-hook . hl-line-mode))
+  :bind (("<M-up>" . ivy-push-view)
+         ("<M-down>" . ivy-switch-view)
+         ("C-S-r" . ivy-resume)
+         :map ivy-occur-mode-map
+         ("f" . forward-char)
+         ("b" . backward-char)
+         ("n" . ivy-occur-next-line)
+         ("p" . ivy-occur-previous-line)
+         ("<C-return>" . ivy-occur-press)))
+
+(use-package prescient
+  :ensure t
   :config
-  (setq dabbrev-abbrev-skip-leading-regexp "[$*/=']")
-  (setq dabbrev-case-fold-search t)
-  (setq dabbrev-eliminate-newlines nil)
-  (setq dabbrev-upcase-means-case-search t)
-  :bind (("C-M-/" . dabbrev-completion)))
+  (setq prescient-history-length 200)
+  (setq prescient-filter-method '(literal regexp))
+  (prescient-persist-mode 1))
 
-;; Recentf
-(use-package recentf
+(use-package ivy-prescient
+  :ensure t
+  :after (prescient ivy)
   :config
-  (setq recentf-max-saved-items 200)
-  (setq recentf-exclude '(".gz" ".xz" ".zip" "/elpa/" "/ssh:" "/sudo:"))
-  (defun dnixty/recentf-keep-predicate (file)
-    (cond
-     ((file-directory-p file) (file-readable-p file))))
-  (add-to-list 'recentf-keep 'dnixty/recentf-keep-default-predicate)
+  (setq ivy-prescient-sort-commands
+        '(:not counsel-grep
+               counsel-rg
+               counsel-switch-buffer
+               ivy-switch-buffer
+               swiper
+               swiper-multi))
+  (setq ivy-prescient-retain-classic-highlighting t)
+  (setq ivy-prescient-enable-filtering nil)
+  (setq ivy-prescient-enable-sorting t)
+  (ivy-prescient-mode 1))
 
-  (defun dnixty/recentf (&optional input)
+(use-package counsel
+  :ensure t
+  :after ivy
+  :config
+  (setq counsel-yank-pop-preselect-last t)
+  (setq counsel-yank-pop-separator "\n—————————\n")
+  (setq counsel-rg-base-command
+        "rg -SHn --no-heading --color never --no-follow --hidden --glob '!.git/' %s")
+  (setq counsel-find-file-occur-cmd
+        "ls -a | grep -i -E '%s' | tr '\\n' '\\0' | xargs -0 ls -d --group-directories-first")
+
+  (defun dps/counsel-fzf-rg-files (&optional input dir)
+    "Run `fzf' in tandem with `ripgrep' to find files in the
+present directory.  If invoked from inside a version-controlled
+repository, then the corresponding root is used instead."
     (interactive)
-    (let* ((files (mapcar 'abbreviate-file-name recentf-list))
-           (f (icomplete-vertical-do ()
-                (completing-read "Open recentf entry: " files nil t
-                                 (when input input)))))
-      (find-file f)))
-  :hook (after-init-hook . recentf-mode)
-  :bind ("C-x C-r" . dnixty/recentf))
+    (let* ((process-environment
+            (cons (concat "FZF_DEFAULT_COMMAND=rg -Sn --color never --files --no-follow --hidden --glob '!.git/'")
+                  process-environment))
+           (vc (vc-root-dir)))
+      (if dir
+          (counsel-fzf input dir)
+        (if (eq vc nil)
+            (counsel-fzf input default-directory)
+          (counsel-fzf input vc)))))
+
+  (defun dps/counsel-fzf-dir (arg)
+    "Specify root directory for `counsel-fzf'."
+    (prot/counsel-fzf-rg-files ivy-text
+                               (read-directory-name
+                                (concat (car (split-string counsel-fzf-cmd))
+                                        " in directory: "))))
+
+  (defun dps/counsel-rg-dir (arg)
+    "Specify root directory for `counsel-rg'."
+    (let ((current-prefix-arg '(4)))
+      (counsel-rg ivy-text nil "")))
+
+  ;; Pass functions as appropriate Ivy actions (accessed via M-o)
+  (ivy-add-actions
+   'counsel-fzf
+   '(("r" dps/counsel-fzf-dir "change root directory")
+     ("g" dps/counsel-rg-dir "use ripgrep in root directory")))
+
+  (ivy-add-actions
+   'counsel-rg
+   '(("r" dps/counsel-rg-dir "change root directory")
+     ("z" dps/counsel-fzf-dir "find file with fzf in root directory")))
+
+  (ivy-add-actions
+   'counsel-find-file
+   '(("g" dps/counsel-rg-dir "use ripgrep in root directory")
+     ("z" dps/counsel-fzf-dir "find file with fzf in root directory")))
+
+  ;; Remove commands that only work with key bindings
+  (put 'counsel-find-symbol 'no-counsel-M-x t)
+  :bind (("M-x" . counsel-M-x)
+         ("C-x C-f" . counsel-find-file)
+         ("C-x b" . ivy-switch-buffer)
+         ("C-x d" . counsel-dired)
+         ("C-x C-r" . counsel-recentf)
+         ("C-M-y" . counsel-mark-ring)
+         ("M-y" . counsel-yank-pop)
+         ("<f1> f" . counsel-describe-function)
+         ("<f1> v" . counsel-describe-variable)
+         ("<f1> a" . counsel-apropos)
+         ("M-s r" . counsel-rg)
+         ("M-s g" . counsel-git-grep)
+         ("M-s l" . counsel-find-library)
+         ("M-s z" . dps/counsel-fzf-rg-files)
+         :map ivy-minibuffer-map
+         ("C-r" . counsel-minibuffer-history)
+         ("C-SPC" . ivy-restrict-to-matches)))
+
+(use-package projectile
+  :ensure t
+  :diminish
+  :config
+  (setq projectile-project-search-path '("~/src"))
+  (setq projectile-indexing-method 'alien)
+  (setq projectile-enable-caching t)
+  (setq projectile-completion-system 'ivy))
+
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (add-to-list 'ivy-initial-inputs-alist '(counsel-projectile-switch-project . ""))
+  :hook (after-init-hook . counsel-projectile-mode)
+  :bind (("M-s b" . counsel-projectile-switch-to-buffer)
+         ("M-s d" . counsel-projectile-find-dir)
+         ("M-s p" . (lambda ()
+                      (interactive)
+                      (counsel-projectile-switch-project 4)))))
+
+(use-package swiper
+  :ensure t
+  :after ivy
+  :config
+  (setq swiper-action-recenter t)
+  (setq swiper-goto-start-of-match t)
+  (setq swiper-include-line-number-in-search t)
+  :bind (("C-s" . swiper)
+         ("M-s s" . swiper-multi)
+         ("M-s w" . swiper-thing-at-point)
+         :map swiper-map
+         ("M-%" . swiper-query-replace)))
+
+(use-package ivy-rich
+  :ensure t
+  :config
+  (setq ivy-rich-path-style 'abbreviate)
+  (setcdr (assq t ivy-format-functions-alist)
+          #'ivy-format-function-line)
+  :hook (after-init-hook . ivy-rich-mode))
+
+(use-package ivy-posframe
+  :ensure t
+  :diminish
+  :config
+  (setq ivy-posframe-parameters
+        '((left-fringe . 2)
+          (right-fringe . 2)
+          (internal-border-width . 2)))
+  (setq ivy-posframe-height-alist
+        '((swiper . 15)
+          (swiper-isearch . 15)
+          (t . 10)))
+  (setq ivy-posframe-display-functions-alist
+        '((complete-symbol . ivy-posframe-display-at-point)
+          (swiper . nil)
+          (swiper-isearch . nil)
+          (t . ivy-posframe-display-at-frame-center)))
+  :hook (after-init-hook . ivy-posframe-mode))
 
 ;; Ibuffer
 (use-package ibuffer
@@ -414,43 +463,6 @@ Use as a value for `completion-in-region-function'."
   (setq lazy-count-suffix-format " (%s/%s)")
   (setq isearch-yank-on-move 'shift)
   (setq isearch-allow-scroll 'unlimited))
-
-(use-package rg
-  :ensure
-  :defer
-  :config
-  (rg-define-search dnixty/rg-vc-or-dir
-    "RipGrep in project root or present directory."
-    :query ask
-    :format regexp
-    :files "everything"
-    :dir (or (vc-root-dir)
-             default-directory)
-    :confirm prefix
-    :flags ("--hidden -g !.git"))
-  (rg-define-search dnixty/rg-ref-in-dir
-    "RipGrep for thing at point in present directory."
-    :query point
-    :format regexp
-    :files "everything"
-    :dir default-directory
-    :confirm prefix
-    :flags ("--hidden -g !.git"))
-  :bind (("C-c g" . dnixty/rg-vc-or-dir)
-         ("C-c r" . dnixty/rg-ref-in-dir)
-         :map rg-mode-map
-         ("C-n" . next-line)
-         ("C-p" . previous-line)
-         ("M-n" . rg-next-file)
-         ("M-p" . rg-prev-file)))
-
-;; Wgrep
-(use-package wgrep
-  :ensure
-  :commands wgrep
-  :config
-  (setq wgrep-auto-save-buffer 1)
-  (setq wgrep-change-readonly-file t))
 
 
 ;;; --------------------------------------------------------------------
