@@ -71,7 +71,7 @@
     "Font for the larger desktop screen."
     (interactive)
     (when window-system
-      (set-face-attribute 'default nil :family "Hack" :height 140)))
+      (set-face-attribute 'default nil :family "Hack" :height 180)))
   (defun dps/set-font ()
     (when window-system
       (if (<= (display-pixel-width) 1366)
