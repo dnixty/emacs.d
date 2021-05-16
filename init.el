@@ -560,7 +560,9 @@ repository, then the corresponding root is used instead."
 ;; C
 (use-package cc-vars
   :config
-  (setq-default c-basic-offset 4))
+  (setq c-default-style '((java-mode . "java")
+                          (awk-mode . "awk")
+                          (other . "bsd"))))
 
 ;; Diff-hl
 (use-package diff-hl
