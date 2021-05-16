@@ -469,26 +469,6 @@ repository, then the corresponding root is used instead."
           #'ivy-format-function-line)
   :hook (after-init-hook . ivy-rich-mode))
 
-(use-package ivy-posframe
-  :ensure t
-  :after ivy
-  :diminish
-  :config
-  (setq ivy-posframe-parameters
-        '((left-fringe . 2)
-          (right-fringe . 2)
-          (internal-border-width . 2)))
-  (setq ivy-posframe-height-alist
-        '((swiper . 15)
-          (swiper-isearch . 15)
-          (t . 10)))
-  (setq ivy-posframe-display-functions-alist
-        '((complete-symbol . ivy-posframe-display-at-point)
-          (swiper . nil)
-          (swiper-isearch . nil)
-          (t . ivy-posframe-display-at-frame-center)))
-  :hook (after-init-hook . ivy-posframe-mode))
-
 ;; Ibuffer
 (use-package ibuffer
   :config
