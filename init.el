@@ -243,6 +243,43 @@
          ("C-x t ," . tab-next)
          ("C-x t ." . tab-previous)))
 
+;; Comments
+(use-package newcomment
+  :config
+  (defun dps/comment-dwim (arg)
+  "Flexible, do-what-I-mean commenting.
+
+If region is active and ARG is either a numeric argument greater
+than one or a universal prefix (\\[universal-argument]), then
+apply `comment-kill' on all comments in the region.
+
+If the region is active and no ARG is supplied, or is equal to a
+numeric prefix of 1, then toggle the comment status of the region.
+
+Else toggle the comment status of the line at point.  With a
+numeric prefix ARG, do so for ARGth lines (negative prefix
+operates on the lines before point)."
+  (interactive "p")
+  (cond
+   ((and (> arg 1) (use-region-p))
+    (let* ((beg (region-beginning))
+           (end (region-end))
+           (num (count-lines beg end)))
+      (save-excursion
+        (goto-char beg)
+        (comment-kill num))))
+   ((use-region-p)
+    (comment-or-uncomment-region (region-beginning) (region-end)))
+   (t
+    (save-excursion (comment-line (or arg 1))))))
+  (setq comment-empty-lines t)
+  (setq comment-multi-line t)
+  ;; (setq comment-style 'multi-line)
+  :bind (("C-;" . dps/comment-dwim)
+         ("C-:" . comment-kill)
+         ("M-;" . comment-indent)))
+
+;; Eldoc
 (use-package eldoc
   :diminish)
 
@@ -491,7 +528,6 @@ repository, then the corresponding root is used instead."
   :bind (("C-h" . delete-backward-char)
          ("C-x k" . kill-this-buffer)
          ("M-z" . zap-up-to-char)
-         ("M-;" . comment-line)
          ("C-," . previous-buffer)
          ("C-." . next-buffer)
          ("M-RET" . eshell)))
