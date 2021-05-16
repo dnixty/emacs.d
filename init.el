@@ -89,7 +89,7 @@
     (if (and (> time 5) (< time 18))
     (modus-themes-load-operandi)
       (modus-themes-load-vivendi)))
-  (enable-theme 'modus-operandi)
+  (enable-theme 'modus-vivendi)
   :bind (("<f5>" . modus-themes-toggle)))
 (use-package diminish
   :ensure)
