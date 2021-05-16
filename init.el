@@ -422,6 +422,7 @@ repository, then the corresponding root is used instead."
          ("M-s g" . counsel-git-grep)
          ("M-s l" . counsel-find-library)
          ("M-s z" . dps/counsel-fzf-rg-files)
+         ("C-c c" . counsel-compile)
          :map ivy-minibuffer-map
          ("C-l" . counsel-up-directory)
          ("C-r" . counsel-minibuffer-history)
